@@ -1,59 +1,56 @@
 #!/usr/bin/python
-'''
+"""
 File rabit.py
 Author: Nathan Hoad <nathan@getoffmalawn.com>
 Description: Short sweet bug tracker similar(ish) to git.
 Date: 30th June 2010
-Version: 0.2
-Updated 11th July 2010: Rewrote some stuff, reformatted output and the like. 
-                        Added a detail parameter for display
-Updated 13th July 2010: Tidied up code to follow style guide.
-'''
+"""
 import sys
 import getopt
 import time
 import sqlite3
 import os.path
 
-_version = 0.2
+_version = 0.3
 _default_name = '.rabbit'
 
 # super sweet lambda functions
-prettify = lambda text, max_length: text[:max_length-3] + "..." \
-    if len(text) > max_length else text
+prettify = lambda text, max_length: text[:max_length-3].replace("\n", '') + "..." \
+    if len(text) > max_length else text.replace("\n", "")
 split_length = lambda text, length: [text[i:i+length] \
     for i in range(0, len(text), length)]
 
 # Using this template ensures no fields will be missed
-# TODO: Consider making this a class
 NewIssue = {'type': 'unknown', 
-                'status': 'new',
-                'priority': 'medium',
-                'summary': '',
-                'date': time.strftime("%Y-%m-%d"),
-                'description': ''}
+            'status': 'new',
+            'priority': 'medium',
+            'summary': '',
+            'date': time.strftime("%Y-%m-%d"),
+            'description': ''}
                                                                                
-_create_issue_statement = "create table Issue(id INTEGER PRIMARY KEY,"\
-+ " type varchar(500),"\
-+ " date varchar(10),"\
-+ " status varchar(500),"\
-+ " priority varchar(500),"\
-+ " summary varchar(500),"\
-+ " description varchar(5000))"
+_create_issue_statement = "create table Issue(id INTEGER PRIMARY KEY, "\
+                        + " type varchar(500),"\
+                        + " date varchar(10),"\
+                        + " status varchar(500),"\
+                        + " priority varchar(500),"\
+                        + " summary varchar(500),"\
+                        + " description varchar(5000))"
 
 _create_comment_statement = "create table Comment("\
-+ "id INTEGER PRIMARY KEY,"\
-+ "issueID INTEGER,"\
-+ "description varchar(500))"\
+                          + "id INTEGER PRIMARY KEY,"\
+                          + "issueID INTEGER,"\
+                          + "description varchar(500))"\
 
 _insert_issue_statement = "insert into Issue(type, date, status, priority,"\
                         + "summary, description)"\
-                        + "values('%(type)s', '%(date)s', '%(status)s', "\
-                        + "'%(priority)s', '%(summary)s', '%(description)s')"
+                        + "values(\"%(type)s\", '%(date)s', \"%(status)s\", "\
+                        + "\"%(priority)s\", \"%(summary)s\", \"%(description)s\")"
 
 class BugTracker():
-    """BugTracker class for managing bugs and comments in a project"""
+    """BugTracker class providing an interface to the SQLite"""
+
     def __init__(self, filename):
+        self.term_width = os.popen('stty size', 'r').read().split()[1]
         if not os.path.isfile(filename):
             self.conn = sqlite3.connect(filename)
             self.conn.execute(_create_issue_statement)
@@ -62,60 +59,59 @@ class BugTracker():
         else:
             self.conn = sqlite3.connect(filename)
 
-    def add(self, new_issue):
-        """add a new issue to the database"""
+    def add(self):
+        """Add a new issue to the database.
+        
+        This method grabs all the necessary data from sys.argv[2:]."""
+        new_issue = self._parse(sys.argv[2:], False)
         self.conn.execute(_insert_issue_statement % new_issue)
         self.conn.commit()
         print "New issue was added"
 
-    def _parse(self, argv):
-        """Parses argv[3:] to get the fields for an issue to update or add"""
-        new_issue = {}
-        opts, args = getopt.getopt(sys.argv[3:], "t:s:p:d:b:", \
-            ["type=", "status=", "priority=", "description=", "summary="])
-
-        for opt, arg in opts:
-            if opt in ("-t", "--type"):
-                new_issue['type'] = arg
-            if opt in ("-s", "--status"):
-                new_issue['status'] = arg
-            if opt in ("-p", "--priority"):
-                new_issue['priority'] = arg
-            if opt in ("-d", "--description"):
-                new_issue['description'] = arg
-            if opt in ("-b", "--summary"):
-                new_issue['summary'] = arg
-
-        return new_issue
-
     def update(self, issue_id, list):
-        """modify an issue"""
-        if not isinstance(issue_id, int):
-            print "issue_id must be an integer! Aborting"
+        """Update an issue in the database.
+        
+        Keyword arguments:
+        issue_id -- integer value for the id you want to delete.
+        list -- List of command line arguments. Should always be argv[3:].
+        
+        """
+        if not list:
+            print "Nothing to be done for", issue_id
             return
-        # TODO: add in checking to make sure the issues are valid!
-        new_issue = self.parse(list)
+
+        test_number(issue_id)
+
+        new_issue = self._parse(list, True)
 
         # this maps the new values to columns using the key name
         statement = "update Issue set " + ",\n".join(["%s = '%s'" % (k, v) 
                                 for k, v in new_issue.items()]) \
-                                    + " where id = %d" % issue_id
+                                    + " where id = %d" % int(issue_id)
 
         self.conn.execute(statement)
         self.conn.commit()
 
     def remove(self, issue_id):
-        """remove an issue by id"""
-        try:
-            statement = "delete from Issue where id = %d" % int(issue_id)
-        except ValueError:
-            print "issue_id MUST be an integer!"
-            return
-        self.conn.execute(statement)
+        """Remote an issue completely from the database.
+        
+        Keyword arguments:
+        issue_id -- integer value for the id you want to delete.
+        """
+        test_number(issue_id)
+        self.conn.execute("delete from Issue where id = %d" % int(issue_id))
+        self.conn.execute("delete from Comment where issueID = %d" % int(issue_id))
         self.conn.commit()
 
-    def print_row(self, row):
-        """Print a row all nice and pretty"""
+    def _print_row(self, row):
+        """Display a row with nice output.
+        
+        Keyword arguments:
+        row -- row from an executed SQLite statement.
+        """
+
+        term_width = self.term_width
+
         if len(row) == 7:
             id = row[0] # fixed width, no point prettifying
             type = prettify(row[1], 7)
@@ -124,23 +120,27 @@ class BugTracker():
             priority = prettify(row[4], 8)
             summary = prettify(row[5], 15)
             description = prettify(row[6], 40)
-            print "| {0:2} | {1:7} | {2} | {3:6} | {4:8} | {5:15} | {6:40} |"\
-            .format(id, type, date, status, priority, summary, description)
+
+            base_layout = "| {0:2} | {1:7} | {2} | {3:6} | {4:8} |".format(id, type, date, status, priority, summary, description)
+            base_percent = len(base_layout)/ float(term_width)
+
+
+            layout = "| {0:2} | {1:7} | {2} | {3:6} | {4:8} | {5:15} | {6:40} |"
+ 
+            print layout.format(id, type, date, status, priority, summary, description)
         else:
             print "| {0:2} | {1:70} |".format(row[0], prettify(row[1], 70))
 
     def display(self, type="issue", id=None):
-        #TODO: Consider implementing ordering system or something like that
-        """list all the issues or comments"""
-
-        int_id = 0
-
+        """Display all issues or comments in the system in various formats.
+        
+        Keyword arguments:
+        type -- Should be one of either "issue", "detail" or "comment"
+        id -- The id of the comment or issue to display. 
+              Does not apply when type is "issue"
+        """
         if id is not None:
-            try:
-                int_id = int(id)
-            except ValueError:
-                print "id MUST be an integer!"
-                return
+            test_number(id)
 
         query = "select id, type, date, status, priority, summary, description"\
               + " from Issue"
@@ -150,38 +150,42 @@ class BugTracker():
 
         if type == "comment":
             query = "select id, description from Comment where issueID = %d" \
-                        % int_id
+                        % int(id)
             header = "| {0:2} | {1:70} |".format("id", "description")
-        if type == "detail":
-            query = "select id, type, date, status, priority, summary, "\
-                  + "description from Issue"\
-                  + " where id = %d" % int_id
         cursor = self.conn.cursor()
         cursor.execute(query)
         nice_bars = "".join(['*' for i in range(len(header))])
 
-        if type == "detail":
-            self.print_detail(cursor.fetchone())
-        else:
-            print nice_bars
-            print header
-            print nice_bars
+        print nice_bars
+        print header
+        print nice_bars
 
-            if type == "issue": # display all issues
-                for row in cursor:
-                    self.print_row(row)
-            else: # display all comments
-                for row in cursor:
-                    self.print_row(row)
+        if type == "issue": # display all issues
+            for row in cursor:
+                self._print_row(row)
+        else: # display all comments
+            for row in cursor:
+                self._print_row(row)
 
-            print nice_bars
+        print nice_bars
 
-    def print_detail(self, row):
-        """Print a detailed overview of an issue"""
-        #TODO: Add stuff for displaying comments here
-        if row is None:
-            print "Invalid row selected, nothing to display"
-            return
+    def detail(self, issue_id):
+        """Print a detailed overview of an issue.
+        
+        Keyword arguments:
+        issue_id -- id of the issue to be displayed
+        """
+
+        test_number(issue_id)
+
+        query = "select id, type, date, status, priority, summary, "\
+              + "description from Issue"\
+              + " where id = %d" % int(issue_id)
+
+        cursor = self.conn.cursor()
+        cursor.execute(query)
+        row = cursor.fetchone()
+
         print "Issue ID:", row[0]
         print "Type:", row[1]
         print "Date:", row[2]
@@ -189,25 +193,34 @@ class BugTracker():
         print "Priority:", row[4]
         print "Summary:", row[5]
         print "Description:", "\n             ".join(split_length(row[6], 70)) # span description if it's too long
+        print
+
+        self.display("comment", row[0])
 
     def comment(self, id, comment):
+        """Add a coment to an issue.
+        
+        Keyword arguments:
+        id -- the issue id to you want to comment on.
+        comment - the text you wish to add.
+        """
         statement = "insert into Comment(issueID, description) values(%d, '%s')"\
             % (int(id), " ".join(comment))
         self.conn.execute(statement)
         self.conn.commit()
 
-    def get_new_issue(self):
-        """Process sys.argv[2:] and return a new issue in magical map form"""
-        new_issue = NewIssue
+    def _parse(self, argv, use_blank=False):
+        """Parse a list of arguments and return a map. Called by update()
 
-        opts, args = getopt.getopt(sys.argv[2:], "t:s:p:d:b:", \
+        Keyword arguments:
+        argv -- list of arguments to parse. Typically this should be sys.argv[3:]
+        use_blank -- if True, an empty map will be used, otherwise a default NewIssue will be used.
+        """
+        new_issue = {} if use_blank else NewIssue
+        opts, args = getopt.getopt(argv, "t:s:p:d:b:", \
             ["type=", "status=", "priority=", "description=", "summary="])
 
         for opt, arg in opts:
-            if arg in ("-t", "--type", "-d", "--description", "-s", "--status",\
-                    "-p", "--priority", "-b", "--summary"):
-                print arg, "was used as an option to", opt, "this is invalid!"
-                return
             if opt in ("-t", "--type"):
                 new_issue['type'] = arg
             if opt in ("-s", "--status"):
@@ -218,10 +231,27 @@ class BugTracker():
                 new_issue['description'] = arg
             if opt in ("-b", "--summary"):
                 new_issue['summary'] = arg
+
         return new_issue
 
+def test_number(id):
+    """Test if id is a number and quit if it is.
+    
+    Keyword arguments:
+    id -- the object to test
+    """
+    try:
+        int(id)
+    except ValueError:
+        print "The issue ID MUST be an integer!"
+        sys.exit(1)
+
 def usage(specifier=None):
-    """Display help and such"""
+    """Display usage for the program.
+    
+    A specifier can be used to display help for a specific command, e.g. "add"
+
+    """
     if specifier is None:
         print "Usage:", sys.argv[0], "[COMMAND] [OPTION]..."\
             + "\nExample:", sys.argv[0], "add --summary 'Segfault on "\
@@ -248,6 +278,9 @@ def usage(specifier=None):
             + "\n  -s, --status=STATUS            status of the problem, e.g. fixed"\
             + "\n  -p, --priority=PRIORITY        it's priority, e.g. high or medium"\
             + "\n  -b, --summary=SUMMARY          brief overview of the issue"
+    elif specifier == "detail":
+        print "Usage:", sys.argv[0], "detail [ISSUEID]"
+        print "Example:", sys.argv[0], "detail 6"
     elif specifier == "rm":
         print "Usage:", sys.argv[0], "rm [ISSUEID]"
         print "Example:", sys.argv[0], "rm 1"
@@ -255,10 +288,9 @@ def usage(specifier=None):
         print "Usage:", sys.argv[0], "list [TYPE] [ID]"
         print "Example:", sys.argv[0], "list comment 5"
         print "Example:", sys.argv[0], "list detail 1"
-
     elif specifier == "comment":
-        print "Usage:", sys.argv[0], "comment [TEXT]"
-        print "Example:", sys.argv[0], "comment Can't get it to reproduce"
+        print "Usage:", sys.argv[0], "comment [ISSUEID] [TEXT]"
+        print "Example:", sys.argv[0], "comment 1 Can't get it to reproduce"
     elif specifier == "update":
         print "Usage:", sys.argv[0], "update [TYPE] [ISSUEID] [OPTION]..."\
             + "\nExample:", sys.argv[0], "update 1--summary 'Segfault on "\
@@ -293,7 +325,7 @@ def main():
 
     try:
         if command == "add":
-            b.add(b.get_new_issue())
+            b.add()
         elif command == "list":
             if len(sys.argv) < 3:
                 b.display()
@@ -301,12 +333,15 @@ def main():
                 b.display(sys.argv[2])
             else:
                 b.display(sys.argv[2], sys.argv[3])
+        elif command == "detail":
+            b.detail(sys.argv[2])
         elif command == "update":
             b.update(sys.argv[2], sys.argv[3:])
         elif command == "rm":
             b.remove(sys.argv[2])
         elif command == "help":
-            if len(sys.argv) >= 3 and sys.argv[2].lower() in ("add", "list", "update", "rm"):
+            if len(sys.argv) >= 3 and sys.argv[2].lower() in \
+                ("add", "list", "update", "rm", "comment"):
                 usage(sys.argv[2])
             else:
                 usage()
@@ -320,3 +355,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+else:
+    print "Uhh, this isn't really supposed to be used via import...but whatever?"
