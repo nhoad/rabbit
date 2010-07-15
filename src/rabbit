@@ -138,19 +138,40 @@ class BugTracker():
         type -- Should be one of either "issue", "detail" or "comment"
         id -- The id of the comment or issue to display. 
               Does not apply when type is "issue"
+              If this is set to none, it will be grabbed from sys.argv[3]
         """
+
+        sort_column = " order by id"
+
+        opts, args = getopt.getopt(sys.argv[3:], "l:", ["sort="])
+        for opt, arg in opts:
+            if opt in ("-l", "--sort"):
+                sort_column = " order by " + arg
+
+        #FIXME: This is so fucking hacky. Rewrite :(
+        if id is None:
+            try:
+                temp = sys.argv[3]
+
+                if temp in ("-l", "--sort"):
+                    sort_column = " order by " + sys.argv[4]
+                else:
+                    id = temp
+            except IndexError:
+                pass
+
         if id is not None:
             test_number(id)
 
         query = "select id, type, date, status, priority, summary, description"\
-              + " from Issue"
+              + " from Issue" + sort_column
         header = "| {0:2} | {1:7} | {2:10} | {3} | {4} | {5:15} | {6:40} |"\
                     .format("id", "type", "date", "status", \
                         "priority", "summary", "description")
 
         if type == "comment":
             query = "select id, description from Comment where issueID = %d" \
-                        % int(id)
+                % int(id) + sort_column
             header = "| {0:2} | {1:70} |".format("id", "description")
         cursor = self.conn.cursor()
         cursor.execute(query)
@@ -175,12 +196,11 @@ class BugTracker():
         Keyword arguments:
         issue_id -- id of the issue to be displayed
         """
-
         test_number(issue_id)
 
         query = "select id, type, date, status, priority, summary, "\
-              + "description from Issue"\
-              + " where id = %d" % int(issue_id)
+              + "description from Issue "\
+              + "where id = %d" % int(issue_id)
 
         cursor = self.conn.cursor()
         cursor.execute(query)
@@ -259,6 +279,7 @@ def usage(specifier=None):
             + "\nCommands:"\
             + "\n  add         Add a new issue"\
             + "\n  list        List all issues"\
+            + "\n  detail      Print detailed into about an issue"\
             + "\n  comment     Add a comment to an issue"\
             + "\n  remove      Remove an issue"\
             + "\n  update      Modify an issue"\
@@ -285,9 +306,11 @@ def usage(specifier=None):
         print "Usage:", sys.argv[0], "rm [ISSUEID]"
         print "Example:", sys.argv[0], "rm 1"
     elif specifier == "list":
-        print "Usage:", sys.argv[0], "list [TYPE] [ID]"
+        print "Usage:", sys.argv[0], "list [TYPE] [ID] [OPTION]"
+        print "\nTYPE may be either comment or issue"
+        print "Options:"
+        print "   --sort [column]                 Sort the output on a column"
         print "Example:", sys.argv[0], "list comment 5"
-        print "Example:", sys.argv[0], "list detail 1"
     elif specifier == "comment":
         print "Usage:", sys.argv[0], "comment [ISSUEID] [TEXT]"
         print "Example:", sys.argv[0], "comment 1 Can't get it to reproduce"
@@ -327,12 +350,10 @@ def main():
         if command == "add":
             b.add()
         elif command == "list":
-            if len(sys.argv) < 3:
-                b.display()
-            elif len(sys.argv) < 4:
+            if len(sys.argv) >= 3:
                 b.display(sys.argv[2])
             else:
-                b.display(sys.argv[2], sys.argv[3])
+                b.display()
         elif command == "detail":
             b.detail(sys.argv[2])
         elif command == "update":
@@ -341,7 +362,7 @@ def main():
             b.remove(sys.argv[2])
         elif command == "help":
             if len(sys.argv) >= 3 and sys.argv[2].lower() in \
-                ("add", "list", "update", "rm", "comment"):
+                ("add", "list", "update", "rm", "comment", "detail"):
                 usage(sys.argv[2])
             else:
                 usage()
