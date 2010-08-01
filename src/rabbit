@@ -1,9 +1,9 @@
 #!/usr/bin/python
 """
-File rabit.py
+File rabbit.py
 Author: Nathan Hoad <nathan@getoffmalawn.com>
 Description: Short sweet bug tracker similar(ish) to git.
-Date: 30th June 2010
+Original Date Written: 30th June 2010
 """
 import sys
 import getopt
@@ -11,7 +11,7 @@ import time
 import sqlite3
 import os.path
 
-_version = 0.3
+_version = "0.4.1"
 _default_name = '.rabbit'
 
 # super sweet lambda functions
