@@ -50,7 +50,16 @@ class BugTracker():
     """BugTracker class providing an interface to the SQLite"""
 
     def __init__(self, filename):
-        self.term_width = os.popen('stty size', 'r').read().split()[1]
+        self.term_width = int(os.popen('stty size', 'r').read().split()[1])
+
+        if self.term_width < 80:
+            print "WARNING: Your terminal is currently less than 80 characters wide. This is fine and dandy, but the formatting may be a bit ugly."
+
+        self.minimum_width = 75
+
+        if self.term_width - self.minimum_width <= 0:
+            print "FATAL ERROR: Your terminal MUST be at least 75 characters wide!"
+            sys.exit(1)
         if not os.path.isfile(filename):
             self.conn = sqlite3.connect(filename)
             self.conn.execute(_create_issue_statement)
@@ -119,13 +128,14 @@ class BugTracker():
             status = prettify(row[3], 6)
             priority = prettify(row[4], 8)
             summary = prettify(row[5], 15)
-            description = prettify(row[6], 40)
+            description = prettify(row[6], self.term_width - self.minimum_width)
 
             base_layout = "| {0:2} | {1:7} | {2} | {3:6} | {4:8} |".format(id, type, date, status, priority, summary, description)
             base_percent = len(base_layout)/ float(term_width)
 
-
-            layout = "| {0:2} | {1:7} | {2} | {3:6} | {4:8} | {5:15} | {6:40} |"
+            term_width = self.term_width
+            layout = "| {0:2} | {1:7} | {2} | {3:6} | {4:8} | {5:15} | {6:%d} |"\
+                            % (term_width  - self.minimum_width
  
             print layout.format(id, type, date, status, priority, summary, description)
         else:
@@ -165,8 +175,12 @@ class BugTracker():
 
         query = "select id, type, date, status, priority, summary, description"\
               + " from Issue" + sort_column
-        header = "| {0:2} | {1:7} | {2:10} | {3} | {4} | {5:15} | {6:40} |"\
-                    .format("id", "type", "date", "status", \
+
+        terminal_width = self.term_width
+        header = "| {0:2} | {1:7} | {2:10} | {3} | {4} | {5:15} | {6:%d} |" \
+                        % (terminal_width - self.minimum_width)
+
+        header = header.format("id", "type", "date", "status", \
                         "priority", "summary", "description")
 
         if type == "comment":
