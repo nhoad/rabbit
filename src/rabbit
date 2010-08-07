@@ -60,13 +60,24 @@ class BugTracker():
         if self.term_width - self.minimum_width <= 0:
             print "FATAL ERROR: Your terminal MUST be at least 75 characters wide!"
             sys.exit(1)
-        if not os.path.isfile(filename):
-            self.conn = sqlite3.connect(filename)
-            self.conn.execute(_create_issue_statement)
-            self.conn.execute(_create_comment_statement)
-            print "empty database was created in", filename
+        if not os.path.isfile(filename) and self._actions():
+            self._create_database(filename)
         else:
             self.conn = sqlite3.connect(filename)
+
+    def _actions(self):
+        if len(sys.argv) > 1 and sys.argv[1] in ("add", "list", "update", "rm", "comment", "detail"):
+            return True
+
+        usage()
+        sys.exit(0)
+
+    def _create_database(self, filename):
+        """Creates the database."""
+        self.conn = sqlite3.connect(filename)
+        self.conn.execute(_create_issue_statement)
+        self.conn.execute(_create_comment_statement)
+        print "empty database was created in", filename
 
     def add(self):
         """Add a new issue to the database.
