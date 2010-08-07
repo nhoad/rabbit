@@ -11,7 +11,7 @@ import time
 import sqlite3
 import os.path
 
-_version = "0.4.1"
+_version = "0.5.0"
 _default_name = '.rabbit'
 
 # super sweet lambda functions
@@ -135,7 +135,7 @@ class BugTracker():
 
             term_width = self.term_width
             layout = "| {0:2} | {1:7} | {2} | {3:6} | {4:8} | {5:15} | {6:%d} |"\
-                            % (term_width  - self.minimum_width
+                            % (term_width  - self.minimum_width)
  
             print layout.format(id, type, date, status, priority, summary, description)
         else:
