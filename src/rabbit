@@ -15,19 +15,20 @@ _version = "0.5.0"
 _default_name = '.rabbit'
 
 # super sweet lambda functions
-prettify = lambda text, max_length: text[:max_length-3].replace("\n", '') + "..." \
-    if len(text) > max_length else text.replace("\n", "")
-split_length = lambda text, length: [text[i:i+length] \
+prettify = lambda text, max_length: text[:max_length - 3]\
+    .replace("\n", '') + "..." if len(text) > max_length \
+    else text.replace("\n", "")
+split_length = lambda text, length: [text[i:i + length] \
     for i in range(0, len(text), length)]
 
 # Using this template ensures no fields will be missed
-NewIssue = {'type': 'unknown', 
+NewIssue = {'type': 'unknown',
             'status': 'new',
             'priority': 'medium',
             'summary': '',
             'date': time.strftime("%Y-%m-%d"),
             'description': ''}
-                                                                               
+
 _create_issue_statement = "create table Issue(id INTEGER PRIMARY KEY, "\
                         + " type varchar(500),"\
                         + " date varchar(10),"\
@@ -42,9 +43,10 @@ _create_comment_statement = "create table Comment("\
                           + "description varchar(500))"\
 
 _insert_issue_statement = "insert into Issue(type, date, status, priority,"\
-                        + "summary, description)"\
-                        + "values(\"%(type)s\", '%(date)s', \"%(status)s\", "\
-                        + "\"%(priority)s\", \"%(summary)s\", \"%(description)s\")"
+                        + "summary, description) values(\"%(type)s\","\
+                        + " '%(date)s', \"%(status)s\", \"%(priority)s\","\
+                        + " \"%(summary)s\", \"%(description)s\")"
+
 
 class BugTracker():
     """BugTracker class providing an interface to the SQLite"""
@@ -53,12 +55,13 @@ class BugTracker():
         self.term_width = int(os.popen('stty size', 'r').read().split()[1])
 
         if self.term_width < 80:
-            print "WARNING: Your terminal is currently less than 80 characters wide. This is fine and dandy, but the formatting may be a bit ugly."
+            print "WARNING: Your terminal is less than 80 characters wide."
+            print "This is fine and all, but the formatting may be a bit ugly."
 
         self.minimum_width = 75
 
         if self.term_width - self.minimum_width <= 0:
-            print "FATAL ERROR: Your terminal MUST be at least 75 characters wide!"
+            print "FATAL: Your terminal MUST be at least 75 characters wide!"
             sys.exit(1)
         if not os.path.isfile(filename):
             self.conn = sqlite3.connect(filename)
@@ -70,7 +73,7 @@ class BugTracker():
 
     def add(self):
         """Add a new issue to the database.
-        
+
         This method grabs all the necessary data from sys.argv[2:]."""
         new_issue = self._parse(sys.argv[2:], False)
         self.conn.execute(_insert_issue_statement % new_issue)
@@ -79,11 +82,11 @@ class BugTracker():
 
     def update(self, issue_id, list):
         """Update an issue in the database.
-        
+
         Keyword arguments:
         issue_id -- integer value for the id you want to delete.
         list -- List of command line arguments. Should always be argv[3:].
-        
+
         """
         if not list:
             print "Nothing to be done for", issue_id
@@ -94,7 +97,7 @@ class BugTracker():
         new_issue = self._parse(list, True)
 
         # this maps the new values to columns using the key name
-        statement = "update Issue set " + ",\n".join(["%s = '%s'" % (k, v) 
+        statement = "update Issue set " + ",\n".join(["%s = '%s'" % (k, v)
                                 for k, v in new_issue.items()]) \
                                     + " where id = %d" % int(issue_id)
 
@@ -103,18 +106,19 @@ class BugTracker():
 
     def remove(self, issue_id):
         """Remote an issue completely from the database.
-        
+
         Keyword arguments:
         issue_id -- integer value for the id you want to delete.
         """
         test_number(issue_id)
         self.conn.execute("delete from Issue where id = %d" % int(issue_id))
-        self.conn.execute("delete from Comment where issueID = %d" % int(issue_id))
+        self.conn.execute("delete from Comment where issueID = %d"\
+            % int(issue_id))
         self.conn.commit()
 
     def _print_row(self, row):
         """Display a row with nice output.
-        
+
         Keyword arguments:
         row -- row from an executed SQLite statement.
         """
@@ -128,25 +132,28 @@ class BugTracker():
             status = prettify(row[3], 6)
             priority = prettify(row[4], 8)
             summary = prettify(row[5], 15)
-            description = prettify(row[6], self.term_width - self.minimum_width)
+            description = prettify(row[6], \
+                self.term_width - self.minimum_width)
 
-            base_layout = "| {0:2} | {1:7} | {2} | {3:6} | {4:8} |".format(id, type, date, status, priority, summary, description)
-            base_percent = len(base_layout)/ float(term_width)
+            base_layout = "| {0:2} | {1:7} | {2} | {3:6} | {4:8} |"\
+                .format(id, type, date, status, priority, summary, description)
+            base_percent = len(base_layout) / float(term_width)
 
             term_width = self.term_width
-            layout = "| {0:2} | {1:7} | {2} | {3:6} | {4:8} | {5:15} | {6:%d} |"\
-                            % (term_width  - self.minimum_width)
- 
-            print layout.format(id, type, date, status, priority, summary, description)
+            layout = "| {0:2} | {1:7} | {2} | {3:6} | {4:8} | {5:15} |"\
+                + " {6:%d} |" % (term_width - self.minimum_width)
+
+            print layout\
+                .format(id, type, date, status, priority, summary, description)
         else:
             print "| {0:2} | {1:70} |".format(row[0], prettify(row[1], 70))
 
     def display(self, type="issue", id=None):
         """Display all issues or comments in the system in various formats.
-        
+
         Keyword arguments:
         type -- Should be one of either "issue", "detail" or "comment"
-        id -- The id of the comment or issue to display. 
+        id -- The id of the comment or issue to display.
               Does not apply when type is "issue"
               If this is set to none, it will be grabbed from sys.argv[3]
         """
@@ -173,8 +180,8 @@ class BugTracker():
         if id is not None:
             test_number(id)
 
-        query = "select id, type, date, status, priority, summary, description"\
-              + " from Issue" + sort_column
+        query = "select id, type, date, status, priority, summary, "\
+            + "description from Issue" + sort_column
 
         terminal_width = self.term_width
         header = "| {0:2} | {1:7} | {2:10} | {3} | {4} | {5:15} | {6:%d} |" \
@@ -206,7 +213,7 @@ class BugTracker():
 
     def detail(self, issue_id):
         """Print a detailed overview of an issue.
-        
+
         Keyword arguments:
         issue_id -- id of the issue to be displayed
         """
@@ -226,20 +233,22 @@ class BugTracker():
         print "Status:", row[3]
         print "Priority:", row[4]
         print "Summary:", row[5]
-        print "Description:", "\n             ".join(split_length(row[6], 70)) # span description if it's too long
+
+        # span description if it's too long
+        print "Description:", "\n             ".join(split_length(row[6], 70))
         print
 
         self.display("comment", row[0])
 
     def comment(self, id, comment):
         """Add a coment to an issue.
-        
+
         Keyword arguments:
         id -- the issue id to you want to comment on.
         comment - the text you wish to add.
         """
-        statement = "insert into Comment(issueID, description) values(%d, '%s')"\
-            % (int(id), " ".join(comment))
+        statement = "insert into Comment(issueID, description)"\
+            + " values(%d, '%s')" % (int(id), " ".join(comment))
         self.conn.execute(statement)
         self.conn.commit()
 
@@ -247,8 +256,9 @@ class BugTracker():
         """Parse a list of arguments and return a map. Called by update()
 
         Keyword arguments:
-        argv -- list of arguments to parse. Typically this should be sys.argv[3:]
-        use_blank -- if True, an empty map will be used, otherwise a default NewIssue will be used.
+        argv -- list of arguments to parse. This should be sys.argv[3:]
+        use_blank -- if True: use empty map.
+                     else: NewIssue will be used.
         """
         new_issue = {} if use_blank else NewIssue
         opts, args = getopt.getopt(argv, "t:s:p:d:b:", \
@@ -268,9 +278,10 @@ class BugTracker():
 
         return new_issue
 
+
 def test_number(id):
     """Test if id is a number and quit if it is.
-    
+
     Keyword arguments:
     id -- the object to test
     """
@@ -280,9 +291,10 @@ def test_number(id):
         print "The issue ID MUST be an integer!"
         sys.exit(1)
 
+
 def usage(specifier=None):
     """Display usage for the program.
-    
+
     A specifier can be used to display help for a specific command, e.g. "add"
 
     """
@@ -342,6 +354,7 @@ def usage(specifier=None):
         print sys.argv[0], "version", _version
         print "rabbit, named with bugs in mind. OH THE WIT!"
 
+
 def main():
     """Main method to start the program"""
     b = BugTracker(_default_name)
@@ -391,4 +404,4 @@ def main():
 if __name__ == "__main__":
     main()
 else:
-    print "Uhh, this isn't really supposed to be used via import...but whatever?"
+    print "rabbit isn't really a library or anything, but whatever"
