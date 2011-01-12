@@ -55,13 +55,13 @@ class BugTracker():
         self.term_width = int(os.popen('stty size', 'r').read().split()[1])
 
         if self.term_width < 80:
-            print "WARNING: Your terminal is less than 80 characters wide."
-            print "This is fine and all, but the formatting may be a bit ugly."
+            print("WARNING: Your terminal is less than 80 characters wide.")
+            print("This is fine and all, but the formatting may be a bit ugly.")
 
         self.minimum_width = 75
 
         if self.term_width - self.minimum_width <= 0:
-            print "FATAL: Your terminal MUST be at least 75 characters wide!"
+            print("FATAL: Your terminal MUST be at least 75 characters wide!")
             sys.exit(1)
         if not os.path.isfile(filename) and self._actions():
             self._create_database(filename)
@@ -80,7 +80,7 @@ class BugTracker():
         self.conn = sqlite3.connect(filename)
         self.conn.execute(_create_issue_statement)
         self.conn.execute(_create_comment_statement)
-        print "empty database was created in", filename
+        print("empty database was created in", filename)
 
     def add(self):
         """Add a new issue to the database.
@@ -89,7 +89,7 @@ class BugTracker():
         new_issue = self._parse(sys.argv[2:], False)
         self.conn.execute(_insert_issue_statement % new_issue)
         self.conn.commit()
-        print "New issue was added"
+        print("New issue was added")
 
     def update(self, issue_id, list):
         """Update an issue in the database.
@@ -100,7 +100,7 @@ class BugTracker():
 
         """
         if not list:
-            print "Nothing to be done for", issue_id
+            print("Nothing to be done for", issue_id)
             return
 
         test_number(issue_id)
@@ -154,10 +154,10 @@ class BugTracker():
             layout = "| {0:2} | {1:7} | {2} | {3:6} | {4:8} | {5:15} |"\
                 + " {6:%d} |" % (term_width - self.minimum_width)
 
-            print layout\
-                .format(id, type, date, status, priority, summary, description)
+            print(layout\
+                .format(id, type, date, status, priority, summary, description))
         else:
-            print "| {0:2} | {1:70} |".format(row[0], prettify(row[1], 70))
+            print("| {0:2} | {1:70} |".format(row[0], prettify(row[1], 70)))
 
     def display(self, type="issue", id=None):
         """Display all issues or comments in the system in various formats.
@@ -209,9 +209,9 @@ class BugTracker():
         cursor.execute(query)
         nice_bars = "".join(['*' for i in range(len(header))])
 
-        print nice_bars
-        print header
-        print nice_bars
+        print(nice_bars)
+        print(header)
+        print(nice_bars)
 
         if type == "issue": # display all issues
             for row in cursor:
@@ -220,7 +220,7 @@ class BugTracker():
             for row in cursor:
                 self._print_row(row)
 
-        print nice_bars
+        print(nice_bars)
 
     def detail(self, issue_id):
         """Print a detailed overview of an issue.
@@ -238,16 +238,16 @@ class BugTracker():
         cursor.execute(query)
         row = cursor.fetchone()
 
-        print "Issue ID:", row[0]
-        print "Type:", row[1]
-        print "Date:", row[2]
-        print "Status:", row[3]
-        print "Priority:", row[4]
-        print "Summary:", row[5]
+        print("Issue ID:", row[0])
+        print("Type:", row[1])
+        print("Date:", row[2])
+        print("Status:", row[3])
+        print("Priority:", row[4])
+        print("Summary:", row[5])
 
         # span description if it's too long
-        print "Description:", "\n             ".join(split_length(row[6], 70))
-        print
+        print("Description:", "\n             ".join(split_length(row[6], 70)))
+        print()
 
         self.display("comment", row[0])
 
@@ -299,7 +299,7 @@ def test_number(id):
     try:
         int(id)
     except ValueError:
-        print "The issue ID MUST be an integer!"
+        print("The issue ID MUST be an integer!")
         sys.exit(1)
 
 
@@ -310,7 +310,7 @@ def usage(specifier=None):
 
     """
     if specifier is None:
-        print "Usage:", sys.argv[0], "[COMMAND] [OPTION]..."\
+        print("Usage:", sys.argv[0], "[COMMAND] [OPTION]..."\
             + "\nExample:", sys.argv[0], "add --summary 'Segfault on "\
             + "program start' --priority high"\
             + "\nCommands:"\
@@ -321,13 +321,13 @@ def usage(specifier=None):
             + "\n  remove      Remove an issue"\
             + "\n  update      Modify an issue"\
             + "\n\nPlease note that you get help at any time for the above "\
-            + "commands with", sys.argv[0], "help [COMMAND]"
+            + "commands with", sys.argv[0], "help [COMMAND]")
         return
 
     specifier = specifier.lower()
 
     if specifier == "add":
-        print "Usage:", sys.argv[0], "add [OPTION]"\
+        print("Usage:", sys.argv[0], "add [OPTION]"\
             + "\nExample:", sys.argv[0], "add --summary 'Segfault on "\
             + "program start' --priority high"\
             + "\nOptions:"\
@@ -335,24 +335,24 @@ def usage(specifier=None):
             + "\n  -t --type=TYPE                 problem type, e.g enhancement, bug"\
             + "\n  -s, --status=STATUS            status of the problem, e.g. fixed"\
             + "\n  -p, --priority=PRIORITY        it's priority, e.g. high or medium"\
-            + "\n  -b, --summary=SUMMARY          brief overview of the issue"
+            + "\n  -b, --summary=SUMMARY          brief overview of the issue")
     elif specifier == "detail":
-        print "Usage:", sys.argv[0], "detail [ISSUEID]"
-        print "Example:", sys.argv[0], "detail 6"
+        print("Usage:", sys.argv[0], "detail [ISSUEID]")
+        print("Example:", sys.argv[0], "detail 6")
     elif specifier == "rm":
-        print "Usage:", sys.argv[0], "rm [ISSUEID]"
-        print "Example:", sys.argv[0], "rm 1"
+        print("Usage:", sys.argv[0], "rm [ISSUEID]")
+        print("Example:", sys.argv[0], "rm 1")
     elif specifier == "list":
-        print "Usage:", sys.argv[0], "list [TYPE] [ID] [OPTION]"
-        print "\nTYPE may be either comment or issue"
-        print "Options:"
-        print "   --sort [column]                 Sort the output on a column"
-        print "Example:", sys.argv[0], "list comment 5"
+        print("Usage:", sys.argv[0], "list [TYPE] [ID] [OPTION]")
+        print("\nTYPE may be either comment or issue")
+        print("Options:")
+        print("   --sort [column]                 Sort the output on a column")
+        print("Example:", sys.argv[0], "list comment 5")
     elif specifier == "comment":
-        print "Usage:", sys.argv[0], "comment [ISSUEID] [TEXT]"
-        print "Example:", sys.argv[0], "comment 1 Can't get it to reproduce"
+        print("Usage:", sys.argv[0], "comment [ISSUEID] [TEXT]")
+        print("Example:", sys.argv[0], "comment 1 Can't get it to reproduce")
     elif specifier == "update":
-        print "Usage:", sys.argv[0], "update [TYPE] [ISSUEID] [OPTION]..."\
+        print("Usage:", sys.argv[0], "update [TYPE] [ISSUEID] [OPTION]..."\
             + "\nExample:", sys.argv[0], "update 1--summary 'Segfault on "\
             + "program start' --priority high"\
             + "\nOptions:"\
@@ -360,10 +360,10 @@ def usage(specifier=None):
             + "\n  -t --type=TYPE                 problem type, e.g enhancement, bug"\
             + "\n  -s, --status=STATUS            status of the problem, e.g. fixed"\
             + "\n  -p, --priority=PRIORITY        it's priority, e.g. high or medium"\
-            + "\n  -b, --summary=SUMMARY          brief overview of the issue"
+            + "\n  -b, --summary=SUMMARY          brief overview of the issue")
     elif specifier == "version":
-        print sys.argv[0], "version", _version
-        print "rabbit, named with bugs in mind. OH THE WIT!"
+        print(sys.argv[0], "version", _version)
+        print("rabbit, named with bugs in mind. OH THE WIT!")
 
 
 def main():
@@ -409,10 +409,10 @@ def main():
         else: # displaying all issues otherwise isn't a bad idea.
             b.display()
     except IndexError:
-        print "Missing or invalid arguments!"
+        print("Missing or invalid arguments!")
         usage(command)
 
 if __name__ == "__main__":
     main()
 else:
-    print "rabbit isn't really a library or anything, but whatever"
+    print("rabbit isn't really a library or anything, but whatever")
