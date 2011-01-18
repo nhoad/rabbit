@@ -318,7 +318,7 @@ def usage(specifier=None):
             + "\n  list        List all issues"\
             + "\n  detail      Print detailed into about an issue"\
             + "\n  comment     Add a comment to an issue"\
-            + "\n  remove      Remove an issue"\
+            + "\n  rm          Remove an issue"\
             + "\n  update      Modify an issue"\
             + "\n\nPlease note that you get help at any time for the above "\
             + "commands with", sys.argv[0], "help [COMMAND]")
