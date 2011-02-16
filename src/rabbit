@@ -69,7 +69,7 @@ class BugTracker():
             self.conn = sqlite3.connect(filename)
 
     def _actions(self):
-        if len(sys.argv) > 1 and sys.argv[1] in ("add", "list", "update", "rm", "comment", "detail"):
+        if len(sys.argv) > 1 and sys.argv[1] in ("add", "list", "update", "rm", "comment", "detail", 'close'):
             return True
 
         usage()
@@ -90,6 +90,16 @@ class BugTracker():
         self.conn.execute(_insert_issue_statement % new_issue)
         self.conn.commit()
         print("New issue was added")
+
+    def close(self, issue_id):
+        test_number(issue_id)
+
+        # this maps the new values to columns using the key name
+        statement = "update Issue set status='closed' where id = %d" % int(issue_id)
+
+        self.conn.execute(statement)
+        self.conn.commit()
+
 
     def update(self, issue_id, list):
         """Update an issue in the database.
@@ -320,6 +330,7 @@ def usage(specifier=None):
             + "\n  comment     Add a comment to an issue"\
             + "\n  rm          Remove an issue"\
             + "\n  update      Modify an issue"\
+            + "\n  close       Close an issue"\
             + "\n\nPlease note that you get help at any time for the above "\
             + "commands with", sys.argv[0], "help [COMMAND]")
         return
@@ -348,6 +359,9 @@ def usage(specifier=None):
         print("Options:")
         print("   --sort [column]                 Sort the output on a column")
         print("Example:", sys.argv[0], "list comment 5")
+    elif specifier == "close":
+        print("Usage:", sys.argv[0], "close [ISSUEID]")
+        print("Example:", sys.argv[0], "close 1")
     elif specifier == "comment":
         print("Usage:", sys.argv[0], "comment [ISSUEID] [TEXT]")
         print("Example:", sys.argv[0], "comment 1 Can't get it to reproduce")
@@ -392,6 +406,8 @@ def main():
                 b.display(sys.argv[2])
             else:
                 b.display()
+        elif command == "close":
+            b.close(sys.argv[2])
         elif command == "detail":
             b.detail(sys.argv[2])
         elif command == "update":
