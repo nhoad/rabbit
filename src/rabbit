@@ -66,9 +66,10 @@ class BugTracker():
             self.conn = sqlite3.connect(filename)
 
     def _actions(self):
-        if len(sys.argv) > 1 and sys.argv[1] in ("add", "list", "update", "rm", "comment", "detail", 'close'):
+        if len(sys.argv) > 1 and sys.argv[1] in ("add", "comment"):
             return True
 
+        print("No rabbit repository exists in this directory")
         usage()
         sys.exit(0)
 
@@ -88,6 +89,15 @@ class BugTracker():
         self.conn.commit()
         print("New issue was added")
 
+    def open(self, issue_id):
+        test_number(issue_id)
+
+        # this maps the new values to columns using the key name
+        statement = "update Issue set status='open' where id = {0}".format(issue_id)
+
+        self.conn.execute(statement)
+        self.conn.commit()
+
     def close(self, issue_id):
         test_number(issue_id)
 
@@ -96,7 +106,6 @@ class BugTracker():
 
         self.conn.execute(statement)
         self.conn.commit()
-
 
     def update(self, issue_id, list):
         """Update an issue in the database.
@@ -197,7 +206,7 @@ class BugTracker():
 
         if type == "comment":
             query = "select id, description from Comment where issueID = %d" \
-                % int(id) + sort_column
+                % int(id)
             header = "| {0:2} | {1:70} |".format("id", "description")
         cursor = self.conn.cursor()
         cursor.execute(query)
@@ -315,6 +324,7 @@ def usage(specifier=None):
             + "\n  rm          Remove an issue"\
             + "\n  update      Modify an issue"\
             + "\n  close       Close an issue"\
+            + "\n  open        Re-Open an issue"\
             + "\n\nPlease note that you get help at any time for the above "\
             + "commands with", sys.argv[0], "help [COMMAND]")
         return
@@ -341,6 +351,9 @@ def usage(specifier=None):
         print("Usage:", sys.argv[0], "list [TYPE] [ID] [OPTION]")
         print("\nTYPE may be either comment or issue")
         print("Example:", sys.argv[0], "list comment 5")
+    elif specifier == "open":
+        print("Usage:", sys.argv[0], "open [ISSUEID]")
+        print("Example:", sys.argv[0], "open 1")
     elif specifier == "close":
         print("Usage:", sys.argv[0], "close [ISSUEID]")
         print("Example:", sys.argv[0], "close 1")
@@ -388,6 +401,8 @@ def main():
                 b.display(sys.argv[2])
             else:
                 b.display()
+        elif command == "open":
+            b.open(sys.argv[2])
         elif command == "close":
             b.close(sys.argv[2])
         elif command == "detail":
