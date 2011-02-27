@@ -3,20 +3,20 @@ rabbit
 Dependencies:
 -------------
 Python 2.6, at least
-python-pysqlite, any recent version. (I used 2.6.0-1) 
+python-pysqlite, any recent version. (I used 2.6.0-1)
 
 General:
 --------
-Ahh, the apple of my eye. Rabbit is an issue-tracker created for 
+Ahh, the apple of my eye. Rabbit is an issue-tracker created for
 lone-wolf developer projects (as most of mine are).
 
-I noticed that all of my small projects had no simple, standard way to keep 
-track of bugs, features, ideas and notes in general about them and so quite 
-often, no documentation of these sorts was ever done and the projects would 
+I noticed that all of my small projects had no simple, standard way to keep
+track of bugs, features, ideas and notes in general about them and so quite
+often, no documentation of these sorts was ever done and the projects would
 become awful messes.
 
-And so, I set out on a quest to find some simple, single user issue tracker 
-software. But alas, I found none. Every single solution was undoubtedly a 
+And so, I set out on a quest to find some simple, single user issue tracker
+software. But alas, I found none. Every single solution was undoubtedly a
 web-based behemoth which I was not going to do for a 200 line python script.
 
 With that, I decided I could write my own easily enough. And here, we have rabbit.
@@ -30,13 +30,13 @@ chmod +x it like normal. And there you go!
 Configuration:
 --------------
 
-There is very little to configure about this, in fact I don't think there is 
+There is very little to configure about this, in fact I don't think there is
 any. Simply use it!
 
 
 Usage:
 ------
-Usage of this glorious software is a bit difficult at first, but it gets 
+Usage of this glorious software is a bit difficult at first, but it gets
 easier the more you use it (hint hint!).
 
 To add an issue:
@@ -47,6 +47,9 @@ To remove an issue:
 
 Displaying issues:
    rabbit list
+
+Displaying issues with a status of 'open':
+   rabbit list open
 
 Displaying a specific issue in detailed form:
    rabbit detail 1

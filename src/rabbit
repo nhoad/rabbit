@@ -23,7 +23,7 @@ split_length = lambda text, length: [text[i:i + length] \
 
 # Using this template ensures no fields will be missed
 NewIssue = {'type': 'unknown',
-            'status': 'new',
+            'status': 'open',
             'priority': 'medium',
             'summary': '',
             'date': time.strftime("%Y-%m-%d"),
@@ -60,9 +60,6 @@ class BugTracker():
 
         self.minimum_width = 75
 
-        if self.term_width - self.minimum_width <= 0:
-            print("FATAL: Your terminal MUST be at least 75 characters wide!")
-            sys.exit(1)
         if not os.path.isfile(filename) and self._actions():
             self._create_database(filename)
         else:
@@ -80,7 +77,7 @@ class BugTracker():
         self.conn = sqlite3.connect(filename)
         self.conn.execute(_create_issue_statement)
         self.conn.execute(_create_comment_statement)
-        print("empty database was created in", filename)
+        print("empty database was created in {0}".format(filename))
 
     def add(self):
         """Add a new issue to the database.
@@ -95,7 +92,7 @@ class BugTracker():
         test_number(issue_id)
 
         # this maps the new values to columns using the key name
-        statement = "update Issue set status='closed' where id = %d" % int(issue_id)
+        statement = "update Issue set status='closed' where id = {0}".format(issue_id)
 
         self.conn.execute(statement)
         self.conn.commit()
@@ -173,36 +170,23 @@ class BugTracker():
         """Display all issues or comments in the system in various formats.
 
         Keyword arguments:
-        type -- Should be one of either "issue", "detail" or "comment"
+        type -- Should be one of either "issue" or "comment" or if you want
+        to filter types based on status, use that. E.g. closed will show all closed issues.
         id -- The id of the comment or issue to display.
               Does not apply when type is "issue"
               If this is set to none, it will be grabbed from sys.argv[3]
         """
 
-        sort_column = " order by id"
-
-        opts, args = getopt.getopt(sys.argv[3:], "l:", ["sort="])
-        for opt, arg in opts:
-            if opt in ("-l", "--sort"):
-                sort_column = " order by " + arg
-
-        #FIXME: This is so fucking hacky. Rewrite :(
-        if id is None:
-            try:
-                temp = sys.argv[3]
-
-                if temp in ("-l", "--sort"):
-                    sort_column = " order by " + sys.argv[4]
-                else:
-                    id = temp
-            except IndexError:
-                pass
-
         if id is not None:
             test_number(id)
 
         query = "select id, type, date, status, priority, summary, "\
-            + "description from Issue" + sort_column
+            + "description from Issue"
+
+        if type not in ('issue', 'comment'):
+            query += ' where status = "{0}"'.format(type)
+
+        print(query)
 
         terminal_width = self.term_width
         header = "| {0:2} | {1:7} | {2:10} | {3} | {4} | {5:15} | {6:%d} |" \
@@ -356,8 +340,6 @@ def usage(specifier=None):
     elif specifier == "list":
         print("Usage:", sys.argv[0], "list [TYPE] [ID] [OPTION]")
         print("\nTYPE may be either comment or issue")
-        print("Options:")
-        print("   --sort [column]                 Sort the output on a column")
         print("Example:", sys.argv[0], "list comment 5")
     elif specifier == "close":
         print("Usage:", sys.argv[0], "close [ISSUEID]")
