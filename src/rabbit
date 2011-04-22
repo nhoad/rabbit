@@ -195,8 +195,6 @@ class BugTracker():
         if type not in ('issue', 'comment'):
             query += ' where status = "{0}"'.format(type)
 
-        print(query)
-
         terminal_width = self.term_width
         header = "| {0:2} | {1:7} | {2:10} | {3} | {4} | {5:15} | {6:%d} |" \
                         % (terminal_width - self.minimum_width)
