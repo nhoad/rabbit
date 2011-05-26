@@ -89,23 +89,27 @@ class BugTracker():
         self.conn.commit()
         print("New issue was added")
 
-    def open(self, issue_id):
-        test_number(issue_id)
+    def open(self, issue_ids):
 
         # this maps the new values to columns using the key name
-        statement = "update Issue set status='open' where id = {0}".format(issue_id)
+        for i_id in issue_ids:
+            test_number(i_id)
+            statement = "update Issue set status='open' where id = {0}".format(i_id)
 
-        self.conn.execute(statement)
+            self.conn.execute(statement)
         self.conn.commit()
+        print ("IDs {0} were opened".format(", ".join([x for x in issue_ids])))
 
-    def close(self, issue_id):
-        test_number(issue_id)
+    def close(self, issue_ids):
 
         # this maps the new values to columns using the key name
-        statement = "update Issue set status='closed' where id = {0}".format(issue_id)
+        for i_id in issue_ids:
+            test_number(i_id)
+            statement = "update Issue set status='closed' where id = {0}".format(i_id)
 
-        self.conn.execute(statement)
+            self.conn.execute(statement)
         self.conn.commit()
+        print ("IDs {0} were closed".format(", ".join([x for x in issue_ids])))
 
     def update(self, issue_id, list):
         """Update an issue in the database.
@@ -158,20 +162,16 @@ class BugTracker():
             date = row[2] # fixed width, no point prettifying
             status = prettify(row[3], 6)
             priority = prettify(row[4], 8)
-            summary = prettify(row[5], 15)
-            description = prettify(row[6], \
-                self.term_width - self.minimum_width)
+            summary = prettify(row[5], self.term_width - self.minimum_width + 18)
 
             base_layout = "| {0:2} | {1:7} | {2} | {3:6} | {4:8} |"\
-                .format(id, type, date, status, priority, summary, description)
+                .format(id, type, date, status, priority, summary)
             base_percent = len(base_layout) / float(term_width)
 
-            term_width = self.term_width
-            layout = "| {0:2} | {1:7} | {2} | {3:6} | {4:8} | {5:15} |"\
-                + " {6:%d} |" % (term_width - self.minimum_width)
+            term_width = self.term_width + 18
+            layout = "| {0:2} | {1:7} | {2} | {3:6} | {4:8} | {5:%d} |" % (term_width - self.minimum_width)
 
-            print(layout\
-                .format(id, type, date, status, priority, summary, description))
+            print(layout.format(id, type, date, status, priority, summary))
         else:
             print("| {0:2} | {1:70} |".format(row[0], prettify(row[1], 70)))
 
@@ -196,11 +196,11 @@ class BugTracker():
             query += ' where status = "{0}"'.format(type)
 
         terminal_width = self.term_width
-        header = "| {0:2} | {1:7} | {2:10} | {3} | {4} | {5:15} | {6:%d} |" \
-                        % (terminal_width - self.minimum_width)
+        header = "| {0:2} | {1:7} | {2:10} | {3} | {4} | {5:%d} |" \
+                        % (terminal_width - self.minimum_width + 18)
 
         header = header.format("id", "type", "date", "status", \
-                        "priority", "summary", "description")
+                        "priority", "summary")
 
         if type == "comment":
             query = "select id, description from Comment where issueID = %d" \
@@ -400,9 +400,9 @@ def main():
             else:
                 b.display()
         elif command == "open":
-            b.open(sys.argv[2])
+            b.open(sys.argv[2:])
         elif command == "close":
-            b.close(sys.argv[2])
+            b.close(sys.argv[2:])
         elif command == "detail":
             b.detail(sys.argv[2])
         elif command == "update":
