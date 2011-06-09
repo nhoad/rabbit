@@ -156,11 +156,16 @@ class Rabbit:
 
         self.conn.execute(issue.generate_update())
 
-    def delete(self, issue):
-        """Delete an issue an all associated comments"""
+    def delete(self, issue_id):
+        """Delete an issue and all associated comments.
 
-        self.conn.execute('delete from Comment where issueID = {0}'.format(issue.i_id))
-        self.conn.execute('delete from Issue where id = {0}'.format(issue.i_id))
+        Keyword arguments:
+        issue_id -- integer id of the Issue to be removed.
+
+        """
+
+        self.conn.execute('delete from Comment where issueID = {0}'.format(issue_id))
+        self.conn.execute('delete from Issue where id = {0}'.format(issue_id))
 
     def add_comment(self, issue_id, comment):
         """Add a comment to an issue

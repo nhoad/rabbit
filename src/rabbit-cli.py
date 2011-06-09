@@ -2,7 +2,7 @@
 import sys
 
 def usage():
-    print('olo')
+    print('usage')
 
 class RabbitConsole:
     def __init__(self):
@@ -22,14 +22,28 @@ class RabbitConsole:
             pass
         elif command == 'comment':
             pass
+
         elif command == 'rm':
-            pass
+            try:
+                self.rabbit.delete(sys.argv[2])
+            except IndexError:
+                print('Missing id')
+                sys.exit(1)
+
         elif command == 'update':
             pass
         elif command == 'close':
-            pass
+            try:
+                self.rabbit.close([int(x) for x in sys.argv[2:]])
+            except ValueError:
+                print('IDs must be numbers!')
+
         elif command == 'open':
-            pass
+            try:
+                self.rabbit.open([int(x) for x in sys.argv[2:]])
+            except ValueError:
+                print('IDs must be numbers!')
+
         elif command == 'help':
             pass
         else:
