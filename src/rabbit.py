@@ -11,6 +11,14 @@ class MissingRepositoryError(Exception):
         return 'Rabbit repository is missing or could not be found'
 
 
+class IllegalCommandError(Exception):
+    def __init__(self, command):
+        self.command = command
+
+    def __str__(self):
+        return "'{0}' is not a Rabbit command. See 'rabbit help'.".format(self.command)
+
+
 class RepositoryExistsError(Exception):
     def __init__(self):
         pass

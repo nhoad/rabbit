@@ -8,6 +8,29 @@ class RabbitConsole:
     def __init__(self):
         self.rabbit = Rabbit()
 
+        command = sys.argv[1]
+
+        if command == 'add':
+            pass
+        elif command == 'list':
+            pass
+        elif command == 'detail':
+            pass
+        elif command == 'comment':
+            pass
+        elif command == 'rm':
+            pass
+        elif command == 'update':
+            pass
+        elif command == 'close':
+            pass
+        elif command == 'open':
+            pass
+        elif command == 'help':
+            pass
+        else:
+            raise IllegalCommandError(command)
+
     def display(self):
         issues = rabbit.issues()
 
@@ -34,3 +57,5 @@ else:
         RabbitConsole()
     except MissingRepositoryError as e:
         print('FATAL:', e)
+    except IllegalCommandError as e:
+        print('rabbit:', e)
