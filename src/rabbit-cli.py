@@ -1,4 +1,4 @@
-from rabbit import *
+#!/usr/bin/env python
 import sys
 
 def usage():
@@ -8,7 +8,7 @@ class RabbitConsole:
     def __init__(self):
         self.rabbit = Rabbit()
 
-    def display_all(self):
+    def display(self):
         issues = rabbit.issues()
 
         for i in issues:
@@ -22,8 +22,13 @@ if len(sys.argv) == 1:
     usage()
     exit(1)
 
+from rabbit import *
+
 if sys.argv[1] == 'init':
-    Rabbit.init()
+    try:
+        Rabbit.init()
+    except RepositoryExistsError as e:
+        print('FATAL:', e)
 else:
     try:
         RabbitConsole()

@@ -1,3 +1,6 @@
+import time
+import os
+import sqlite3
 _filename = '.rabbit'
 
 class MissingRepositoryError(Exception):
@@ -6,6 +9,14 @@ class MissingRepositoryError(Exception):
 
     def __str__(self):
         return 'Rabbit repository is missing or could not be found'
+
+
+class RepositoryExistsError(Exception):
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        return 'There already exists a Rabbit repository in this directory'
 
 
 class NonexistentIssueError(Exception):
@@ -17,7 +28,6 @@ class NonexistentIssueError(Exception):
 
 
 class Issue:
-    import time
     type = 'unknown'
     status = 'open'
     priority = 'medium'
@@ -56,28 +66,29 @@ class Issue:
         return '| {0} | {1} | {2} | {3} | {4} | {5} |' .format(
             self.id, self.type, self.date, self.status, self.priority, self.summary)
 
+"""Rabbit class, for managing bugs in the rabbit repository"""
 class Rabbit:
-    """Create the Rabbit object.
-
-    Will raise MissingRepositoryError if you haven't initialised a
-    repository in the working directory
-
-    """
-
     def __init__(self):
-        import os
+        """Create the Rabbit object.
+
+        Will raise MissingRepositoryError if you haven't initialised a
+        repository in the working directory
+
+        """
 
         if not os.path.isfile(_filename):
             raise MissingRepositoryError()
 
-        import sqlite3
-
         self.conn = sqlite3.connect(_filename)
 
     @staticmethod
-    def init(self):
+    def init():
         """Create the database file and create the tables."""
-        self.conn = sqlite3.connect(_filename)
+
+        if os.path.isfile(_filename):
+            raise RepositoryExistsError()
+
+        conn = sqlite3.connect(_filename)
 
         issue_table = """create table Issue(id INTEGER PRIMARY KEY,
                          type varchar(500),
@@ -91,8 +102,10 @@ class Rabbit:
                            issueID INTEGER,
                            description varchar(500))"""
 
-        self.conn.execute(issue_table)
-        self.conn.execute(comment_table)
+        conn.execute(issue_table)
+        conn.execute(comment_table)
+        conn.close()
+        print('Empty Rabbit repository created')
 
     def add(self, issue):
         """Add a new issue to the repository
@@ -152,15 +165,24 @@ class Rabbit:
 
         self.conn.execute("Insert into Comment(issueID, description) values({0}, '{1}'").format(issue_id, comment)
 
-    def issues(self):
+    def issues(self, status_filter='all'):
         """Return a list of all Issues in the repository.
 
-        TODO: Add comments in as well.
+        TODO: Add comment retrieval in as well.
+
+        Keyword arguments:
+        status_filter -- status to filter. Default results in all open bugs being returned. Pass all to return all
 
         """
 
         cursor = self.conn.cursor()
-        cursor.execute('select id, type, date, status, priority, summary from Issue')
+
+        query = "select id, type, date, status, priority, summary from Issue where status = '{0}'".format(status_filter)
+
+        if status_filter in ('all', ''):
+            query = "select id, type, date, status, priority, summary from Issue"
+
+        cursor.execute(query)
 
         issues = []
         for r in cursor:
