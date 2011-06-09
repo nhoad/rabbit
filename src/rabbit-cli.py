@@ -13,7 +13,11 @@ class RabbitConsole:
         if command == 'add':
             pass
         elif command == 'list':
-            pass
+            try:
+                self.display(sys.argv[2])
+            except IndexError:
+                self.display('')
+
         elif command == 'detail':
             pass
         elif command == 'comment':
@@ -31,11 +35,11 @@ class RabbitConsole:
         else:
             raise IllegalCommandError(command)
 
-    def display(self):
-        issues = rabbit.issues()
+    def display(self, status):
+        issues = self.rabbit.issues(status)
 
         for i in issues:
-            print(issue)
+            print(i)
 
     def display_detail(self, issue_id):
         pass
