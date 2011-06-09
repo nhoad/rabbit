@@ -164,10 +164,10 @@ class Rabbit:
 
         """
 
-        self.conn.execute('delete from Comment where issueID = {0}'.format(issue_id))
-        self.conn.execute('delete from Issue where id = {0}'.format(issue_id))
+        self.conn.execute('delete from Comment where issueID = {}'.format(issue_id))
+        self.conn.execute('delete from Issue where id = {}'.format(issue_id))
 
-    def add_comment(self, issue_id, comment):
+    def comment(self, issue_id, comment):
         """Add a comment to an issue
 
         Keyword arguments:
@@ -175,8 +175,7 @@ class Rabbit:
         comment -- string containing the comment.
 
         """
-
-        self.conn.execute("Insert into Comment(issueID, description) values({0}, '{1}'").format(issue_id, comment)
+        self.conn.execute("Insert into Comment(issueID, description) values({}, '{}')".format(issue_id, comment))
 
     def issues(self, status_filter='all'):
         """Return a list of all Issues in the repository.

@@ -21,13 +21,20 @@ class RabbitConsole:
         elif command == 'detail':
             pass
         elif command == 'comment':
-            pass
+            try:
+                self.rabbit.comment(int(sys.argv[2]), sys.argv[3])
+            except ValueError:
+                print('Issue ID must be a number!')
+                sys.exit(1)
+            except IndexError:
+                print('You must provide an Issue ID and a comment!')
+                sys.exit(1)
 
         elif command == 'rm':
             try:
                 self.rabbit.delete(sys.argv[2])
             except IndexError:
-                print('Missing id')
+                print('Missing ID')
                 sys.exit(1)
 
         elif command == 'update':
