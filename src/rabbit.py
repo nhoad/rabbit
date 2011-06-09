@@ -67,8 +67,8 @@ class Issue:
 
         return """insert into Issue(type, date, status, priority, summary,
                   description) values('{0}', '{1}', '{2}', '{3}', '{4}',
-                  '{5}')""".format(self.type, self.status, self.priority,
-                  self.summary, self.date, self.description).replace('\n', '')
+                  '{5}')""".format(self.type, self.date, self.status, self.priority,
+                  self.summary, self.description).replace('\n', '')
 
     def __str__(self):
         return '| {:>2} | {:>11} | {} | {:>6} | {:>6} | {} |' .format(
@@ -122,6 +122,9 @@ class Rabbit:
         issue -- Issue object to be stored
 
         """
+        print('asdf')
+        print(issue)
+        print(issue.generate_insert())
         self.conn.execute(issue.generate_insert())
 
     def close(self, issue_id):

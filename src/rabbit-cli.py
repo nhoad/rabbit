@@ -1,5 +1,7 @@
 #!/usr/bin/env python
+
 import sys
+import getopt
 
 def usage():
     print('usage')
@@ -11,7 +13,13 @@ class RabbitConsole:
         command = sys.argv[1]
 
         if command == 'add':
-            pass
+            issue = self._parse_args()
+            self.rabbit.add(issue)
+
+        elif command == 'update':
+            issue = self._parse_args()
+            self.rabbit.add(update)
+
         elif command == 'list':
             try:
                 self.display(sys.argv[2])
@@ -37,8 +45,6 @@ class RabbitConsole:
                 print('Missing ID')
                 sys.exit(1)
 
-        elif command == 'update':
-            pass
         elif command == 'close':
             try:
                 self.rabbit.close([int(x) for x in sys.argv[2:]])
@@ -57,6 +63,31 @@ class RabbitConsole:
             pass
         else:
             raise IllegalCommandError(command)
+
+    def _parse_args(self):
+        sys_args = sys.argv[2:] if sys.argv[1] == 'add' else sys.argv[3:]
+
+        opts, args = getopt.getopt(sys_args, "t:s:p:d:b:",
+            ["type=", "status=", "priority=", "description=", "summary="])
+
+        i = Issue()
+
+        if sys.argv[1] == 'update':
+            i.i_id = int(sys.argv[2])
+
+        for opt, arg in opts:
+            if opt in ('-t', '--type'):
+                i.type = arg
+            if opt in ('-s', '--status'):
+                i.status = arg
+            if opt in ('-p', '--priority'):
+                i.priority = arg
+            if opt in ('-d', '--description'):
+                i.description = arg
+            if opt in ('-b', '--brief'):
+                i.summary = arg
+
+        return i
 
     def display(self, status):
         issues = self.rabbit.issues(status)
