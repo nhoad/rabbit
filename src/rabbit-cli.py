@@ -44,12 +44,14 @@ class RabbitConsole:
                 self.rabbit.close([int(x) for x in sys.argv[2:]])
             except ValueError:
                 print('IDs must be numbers!')
+                sys.exit(1)
 
         elif command == 'open':
             try:
                 self.rabbit.open([int(x) for x in sys.argv[2:]])
             except ValueError:
                 print('IDs must be numbers!')
+                sys.exit(1)
 
         elif command == 'help':
             pass
