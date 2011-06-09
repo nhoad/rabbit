@@ -2,7 +2,22 @@ _filename = '.rabbit'
 
 import time
 import sqlite3
-import sys
+
+class MissingRepositoryError(Exception):
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        return 'Rabbit repository is missing or could not be found'
+
+
+class NonexistentIssueError(Exception):
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        return 'The specified Issue does not exist'
+
 
 class Issue:
     type = 'unknown'
@@ -12,37 +27,43 @@ class Issue:
     date = time.strftime('%Y-%m-%d')
     description = ''
 
-    def __init__(self):
-        pass
+    def __init__(self, i_id=None):
+        self.i_id = i_id
 
     def generate_update(self):
-        """Generate the SQL update statement to update this issue"""
-        pass
+        """Generate the SQL update statement to update this issue
+
+        This does not generate SQL for comments, or persist the object."""
+
+        if i_id is None:
+            raise NonexistentIssueError()
+
+        return """update Issue set type = '{0}', date='{1}', status='{2}',
+                  priority='{3}', summary='{4}', description='{5}'
+                  where id = {6})""".format(self.type, self.status,
+                  self.priority, self.summary, self.date,
+                  self.description, self.i_id).replace('\n', '')
 
     def generate_insert(self):
         """Generate the SQL insert statement to save this issue
 
-        This does not generate the SQL necessary for saving the comments."""
-        pass
+        This does not generate the SQL necessary for saving the comments, nor does it actually persist the object."""
 
+        return """insert into Issue(type, date, status, priority, summary,
+                  description) values('{0}', '{1}', '{2}', '{3}', '{4}',
+                  '{5}')""".format(self.type, self.status, self.priority,
+                  self.summary, self.date, self.description).replace('\n', '')
 
-class MissingRepositoryError(Exception):
-    def __init__(self, value):
-        self.value = value
+"""RabbitBuilder does nothing but initialise the database -
 
-    def __str__(self):
-        return repr(self.value)
+i.e. create the database file, and the tables
 
-
-class Rabbit:
+"""
+class RabbitBuilder:
     def __init__(self):
-        if not os.path.isfile(_filename) and sys.argv[1].lower() != 'init':
-            raise MissingRepositoryError()
-
+        """Create the database file and create the tables"""
         self.conn = sqlite3.connect(_filename)
 
-    def _create_database(self):
-        """Create the database file and create the tables"""
         issue_table = """create table Issue(id INTEGER PRIMARY KEY,
                          type varchar(500),
                          date varchar(10),
@@ -58,26 +79,55 @@ class Rabbit:
         self.conn.execute(issue_table)
         self.conn.execute(comment_table)
 
+
+
+class Rabbit:
+    """Create the Rabbit object.
+
+    Will raise MissingRepositoryError if you haven't initialised a
+    repository in the working directory
+
+    """
+    def __init__(self):
+        if not os.path.isfile(_filename):
+            raise MissingRepositoryError()
+
+        self.conn = sqlite3.connect(_filename)
+
     def init(self):
-        self._create_database()
+        RabbitBuilder()
         # add example issue?
 
     def add(self, issue):
+        """Add a new issue to the repository
+
+        Keyword arguments:
+        issue -- Issue object to be stored
+
+        """
         self.conn.execute(issue.generate_insert())
 
     def close(self, issue_id):
-        self.conn.execute("update Issue set status='closed' where id = {0}".format(issue_id)
-        pass
-
-    def open(self, issue_id):
-        """Update the status of an issue to 'open'
+        """Update the status of an issue to 'closed'
 
         Keyword arguments:
-        issue_id -- integer value for the id to be updated
+        issue_id -- set of integer ids to be closed
 
         """
 
-        self.conn.execute("update Issue set status='open' where id = {0}".format(issue_id)
+        for i_id in issue_ids:
+            self.conn.execute("update Issue set status='closed' where id = {0}".format(i_id))
+
+    def open(self, issue_ids):
+        """Update the status of an issue to 'open'
+
+        Keyword arguments:
+        issue_ids -- set of integers ids to be opened
+
+        """
+
+        for i_id in issue_ids:
+            self.conn.execute("update Issue set status='open' where id = {0}".format(i_id))
 
     def update(self, issue):
         """Update an issue in the database
@@ -104,4 +154,4 @@ class Rabbit:
 
         """
 
-        self.conn.execute("Insert into Comment(issueID, description) values({0}, '{1}').format(issue_id, comment)
+        self.conn.execute("Insert into Comment(issueID, description) values({0}, '{1}'").format(issue_id, comment)
