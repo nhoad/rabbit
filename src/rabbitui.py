@@ -116,7 +116,12 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
             self.rabbit.comment(i_id, t)
 
         elif action.text() == 'Delete':
-            pass
+            items = table.selectedItems()
+
+            i_id = int(items[0].text())
+            table.removeRow(table.currentRow())
+            self.rabbit.delete(i_id)
+
         elif action.text() == 'Modify':
             pass
         elif action.text == 'Filter':
