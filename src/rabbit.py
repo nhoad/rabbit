@@ -56,7 +56,7 @@ class Issue:
 
         return """update Issue set type = '{0}', date='{1}', status='{2}',
                   priority='{3}', summary='{4}', description='{5}'
-                  where id = {6})""".format(self.type, self.status,
+                  where id = {6};)""".format(self.type, self.status,
                   self.priority, self.summary, self.date,
                   self.description, self.i_id).replace('\n', '')
 
@@ -67,7 +67,7 @@ class Issue:
 
         return """insert into Issue(type, date, status, priority, summary,
                   description) values('{0}', '{1}', '{2}', '{3}', '{4}',
-                  '{5}')""".format(self.type, self.date, self.status, self.priority,
+                  '{5}');""".format(self.type, self.date, self.status, self.priority,
                   self.summary, self.description).replace('\n', '')
 
     def __str__(self):
@@ -122,21 +122,21 @@ class Rabbit:
         issue -- Issue object to be stored
 
         """
-        print('asdf')
-        print(issue)
-        print(issue.generate_insert())
         self.conn.execute(issue.generate_insert())
+        self.conn.commit()
 
-    def close(self, issue_id):
+    def close(self, issue_ids):
         """Update the status of an issue to 'closed'
 
         Keyword arguments:
-        issue_id -- set of integer ids to be closed
+        issue_ids -- set of integer ids to be closed
 
         """
 
         for i_id in issue_ids:
-            self.conn.execute("update Issue set status='closed' where id = {0}".format(i_id))
+            self.conn.execute("update Issue set status='closed' where id = {0};".format(i_id))
+
+        self.conn.commit()
 
     def open(self, issue_ids):
         """Update the status of an issue to 'open'
@@ -148,6 +148,8 @@ class Rabbit:
 
         for i_id in issue_ids:
             self.conn.execute("update Issue set status='open' where id = {0}".format(i_id))
+
+        self.conn.commit()
 
     def update(self, issue):
         """Update an issue in the database
