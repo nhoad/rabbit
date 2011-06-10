@@ -1,8 +1,11 @@
+#!/usr/bin/env python
 import sys
 import sqlite3
 from PyQt4 import QtCore
 from PyQt4 import QtGui
 from PyQt4 import uic
+
+from rabbit import *
 
 app = QtGui.QApplication(sys.argv)
 
@@ -37,7 +40,7 @@ class AddDialog(Qt_AddWindow, Ui_AddWindow):
         pass
 
 
-class MyWidget(Qt_MainWindow, Ui_MainWindow):
+class RabbitUI(Qt_MainWindow, Ui_MainWindow):
     def __init__(self):
         super(Qt_MainWindow, self).__init__()
 
@@ -51,7 +54,7 @@ class MyWidget(Qt_MainWindow, Ui_MainWindow):
         a.exec()
 
 
-w = MyWidget()
+w = RabbitUI()
 w.show()
 
 sys.exit(app.exec_())
