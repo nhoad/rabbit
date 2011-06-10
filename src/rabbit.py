@@ -149,7 +149,7 @@ class Rabbit:
         """
 
         for i_id in issue_ids:
-            self.conn.execute("update Issue set status='closed' where id = {0};".format(i_id))
+            self.conn.execute("update Issue set status='closed' where id = {0}".format(i_id))
 
         self.conn.commit()
 
@@ -255,7 +255,7 @@ class Rabbit:
             i = Issue(r[0], r[1], r[2], r[3], r[4], r[5], r[6])
 
             for c in comments:
-                i.comments.append(c[0], c[1])
+                i.comments.append((c[0], c[1]))
 
             issues.append(i)
 
