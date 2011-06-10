@@ -109,6 +109,12 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
             dialog.setLabelText('Enter your comment:')
             dialog.exec()
             t = dialog.textValue()
+
+            items = table.selectedItems()
+
+            i_id = int(items[0].text())
+            self.rabbit.comment(i_id, t)
+
         elif action.text() == 'Delete':
             pass
         elif action.text() == 'Modify':
