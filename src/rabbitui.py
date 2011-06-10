@@ -4,7 +4,7 @@ import sqlite3
 from PyQt4 import QtCore
 from PyQt4 import QtGui
 from PyQt4 import uic
-from PyQt4.QtGui import QTableWidgetItem, QMenu
+from PyQt4.QtGui import QTableWidgetItem, QMenu, QMessageBox
 
 from rabbit import *
 
@@ -116,11 +116,13 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
             self.rabbit.comment(i_id, t)
 
         elif action.text() == 'Delete':
-            items = table.selectedItems()
+            result = QMessageBox.warning(self, 'Remove this Issue?', 'Are you sure you want delete this issue?', QMessageBox.Yes, QMessageBox.No)
 
-            i_id = int(items[0].text())
-            table.removeRow(table.currentRow())
-            self.rabbit.delete(i_id)
+            if result == QMessageBox.Yes:
+                items = table.selectedItems()
+                i_id = int(items[0].text())
+                table.removeRow(table.currentRow())
+                self.rabbit.delete(i_id)
 
         elif action.text() == 'Modify':
             pass
