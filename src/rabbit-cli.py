@@ -199,6 +199,7 @@ class RabbitConsole:
 
         print(issue)
 
+        print('Comments:')
         for c in issue.comments:
             print(c[1])
 

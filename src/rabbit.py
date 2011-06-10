@@ -218,7 +218,15 @@ class Rabbit:
         cursor.execute(query)
         r = cursor.fetchone()
 
-        return Issue(r[0], r[1], r[2], r[3], r[4], r[5], r[6])
+        i = Issue(r[0], r[1], r[2], r[3], r[4], r[5], r[6])
+
+        query = "select id, description from Comment where issueID = {}".format(issue_id)
+        cursor.execute(query)
+
+        for row in cursor:
+            i.comments.append((row[0], row[1]))
+
+        return i
 
     def issues(self, status_filter='all'):
         """Return a list of all Issues in the repository.
@@ -231,6 +239,7 @@ class Rabbit:
         """
 
         cursor = self.conn.cursor()
+        comments = self.conn.cursor()
 
         query = "select id, type, status, priority, summary, date, description from Issue where status = '{0}'".format(status_filter)
 
@@ -241,6 +250,13 @@ class Rabbit:
 
         issues = []
         for r in cursor:
-            issues.append(Issue(r[0], r[1], r[2], r[3], r[4], r[5], r[6]))
+            comments.execute('select id, description from Comment where issueID = {}'.format(r[0]))
+
+            i = Issue(r[0], r[1], r[2], r[3], r[4], r[5], r[6])
+
+            for c in comments:
+                i.comments.append(c[0], c[1])
+
+            issues.append(i)
 
         return issues
