@@ -27,19 +27,31 @@ class Issue:
 
 
 class AddDialog(Qt_AddWindow, Ui_AddWindow):
-    def __init__(self):
+    def __init__(self, rabbit):
         super(Qt_AddWindow, self).__init__()
         self.setupUi(self)
         self.setModal(True)
 
+        self.rabbit = rabbit
+
         self.connect(self.buttonBox, QtCore.SIGNAL('accepted()'), self.add)
 
     def add(self):
-        print('asdf')
+        rabbit = self.rabbit
 
-    def issue(self):
-        pass
+        summary = self.summary.text()
+        type = self.type.text()
+        priority = self.priority.text()
+        description = self.description.text()
 
+        i = Issue()
+
+        i.summary = summary
+        i.type = type
+        i.priority = priority
+        i.description = description
+
+        rabbit.add(i)
 
 class RabbitUI(Qt_MainWindow, Ui_MainWindow):
     def __init__(self):
@@ -53,7 +65,7 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
         self.issueTable.customContextMenuRequested.connect(self.right_click)
 
     def display_add(self):
-        a = AddDialog()
+        a = AddDialog(self.rabbit)
         a.exec()
 
     def load_rabbit(self):
@@ -108,12 +120,12 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
             dialog = QtGui.QInputDialog()
             dialog.setLabelText('Enter your comment:')
             dialog.exec()
-            t = dialog.textValue()
 
-            items = table.selectedItems()
-
-            i_id = int(items[0].text())
-            self.rabbit.comment(i_id, t)
+            if
+                t = dialog.textValue()
+                items = table.selectedItems()
+                i_id = int(items[0].text())
+                self.rabbit.comment(i_id, t)
 
         elif action.text() == 'Delete':
             result = QMessageBox.warning(self, 'Remove this Issue?', 'Are you sure you want delete this issue?', QMessageBox.Yes, QMessageBox.No)
