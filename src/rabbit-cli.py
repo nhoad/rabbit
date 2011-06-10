@@ -75,6 +75,9 @@ class RabbitConsole:
         if sys.argv[1] == 'update':
             i.i_id = int(sys.argv[2])
 
+        if not opts:
+            raise MissingArgumentError()
+
         for opt, arg in opts:
             if opt in ('-t', '--type'):
                 i.type = arg
@@ -113,7 +116,13 @@ if sys.argv[1] == 'init':
 else:
     try:
         RabbitConsole()
+        sys.exit(0)
     except MissingRepositoryError as e:
         print('FATAL:', e)
     except IllegalCommandError as e:
         print('rabbit:', e)
+    except MissingArgumentError as e:
+        print('rabbit:', e)
+
+# if it makes it here, then an error occured
+sys.exit(1)

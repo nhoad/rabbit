@@ -11,6 +11,14 @@ class MissingRepositoryError(Exception):
         return 'Rabbit repository is missing or could not be found'
 
 
+class MissingArgumentError(Exception):
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        return 'No arguments supplied'
+
+
 class IllegalCommandError(Exception):
     def __init__(self, command):
         self.command = command
