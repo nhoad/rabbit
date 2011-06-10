@@ -84,6 +84,7 @@ class RabbitConsole:
                 self.display('')
 
         elif command == 'detail':
+            self.display_detail(sys.argv[2])
             pass
         elif command == 'comment':
             try:
@@ -160,26 +161,32 @@ class RabbitConsole:
         i = issues[0]
 
         available_width = term_width - len("| {:>2} | {:<11} | {} | {:<6} | {:<6} | ".format(
-            i.i_id, i.type, i.date, i.status, i.priority)) - 2
+            i.i_id, i.type, i.date, i.status, i.priority)) - 4
 
         # if the user is using a tiny terminal, screw them.
+        # for reference, that would be a terminal width of ~20 characters.
         if available_width < 1:
             available_width = 80
 
-        print('*' * available_width + term_width)
+        summary = ":<{}".format(available_width)
+
+        nice_bars = "".join(['*' for i in range(term_width)])
+        print(nice_bars)
+        print("| {:>2} | {:<11} | {:<10} | {:<6} | {} | ".format(
+            'id', 'type', 'date', 'status', 'priority') + str('{' + summary + '} |').format('summary'))
+        print(nice_bars)
+
         # get terminal width
         for i in issues:
-            first_half = "| {:>2} | {:<11} | {} | {:<6} | {:<6} | ".format(
+            first_half = "| {:>2} | {:<11} | {} | {:<6} | {:<8} | ".format(
                 i.i_id, i.type, i.date, i.status, i.priority)
-
-            summary = ":<{}".format(available_width)
 
             final_line = first_half + '{' + summary + '}'
             print(final_line.format(prettify(i.summary, available_width)), '|')
+        print(nice_bars)
 
     def display_detail(self, issue_id):
-        pass
-
+        print(self.rabbit.issue(issue_id))
 
 if len(sys.argv) == 1:
     usage()

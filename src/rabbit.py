@@ -54,6 +54,8 @@ class Issue:
         self.date = date
         self.description = description
 
+        self.comments = []
+
     def generate_update(self):
         """Generate the SQL update statement to update this issue
 
@@ -78,6 +80,11 @@ class Issue:
                   '{5}');""".format(self.type, self.date, self.status, self.priority,
                   self.summary, self.description).replace('\n', '')
 
+    def __str__(self):
+        text = 'Issue ID: {}\nSummary: {}\nType: {}\nDate: {}\nStatus: {}\nPriority: {}\nDescription: {}'.format(
+            self.i_id, self.summary, self.type, self.date, self.status, self.priority, self.description)
+
+        return text
 
 """Rabbit class, for managing bugs in the rabbit repository"""
 class Rabbit:
@@ -193,6 +200,25 @@ class Rabbit:
 
         self.conn.execute("Insert into Comment(issueID, description) values({}, '{}')".format(issue_id, comment))
         self.conn.commit()
+
+    def issue(self, issue_id):
+        """Return a specific Issue
+
+        TODO: Add comment retrieval in as well.
+
+        Keyword arguments:
+        issue_id -- id of the issue to return
+
+        """
+
+        cursor = self.conn.cursor()
+
+        query = "select id, type, status, priority, summary, date, description from Issue where id = {}".format(issue_id)
+
+        cursor.execute(query)
+        r = cursor.fetchone()
+
+        return Issue(r[0], r[1], r[2], r[3], r[4], r[5], r[6])
 
     def issues(self, status_filter='all'):
         """Return a list of all Issues in the repository.
