@@ -78,9 +78,6 @@ class Issue:
                   '{5}');""".format(self.type, self.date, self.status, self.priority,
                   self.summary, self.description).replace('\n', '')
 
-    def __str__(self):
-        return '| {:>2} | {:>11} | {} | {:>6} | {:>6} | {} |' .format(
-            self.i_id, self.type, self.date, self.status, self.priority, self.summary)
 
 """Rabbit class, for managing bugs in the rabbit repository"""
 class Rabbit:

@@ -137,23 +137,45 @@ class RabbitConsole:
 
         for opt, arg in opts:
             if opt in ('-t', '--type'):
-                i.type = arg
+                i.type = arg.replace("'", "''")
             if opt in ('-s', '--status'):
-                i.status = arg
+                i.status = arg.replace("'", "''")
             if opt in ('-p', '--priority'):
-                i.priority = arg
+                i.priority = arg.replace("'", "''")
             if opt in ('-d', '--description'):
-                i.description = arg
+                i.description = arg.replace("'", "''")
             if opt in ('-b', '--brief'):
-                i.summary = arg
+                i.summary = arg.replace("'", "''")
 
         return i
 
     def display(self, status):
         issues = self.rabbit.issues(status)
 
+        term_width = int(os.popen('stty size', 'r').read().split()[1])
+
+        prettify = lambda text, max_length: text[:max_length - 3].replace(
+            '\n', '') + '...' if len(text) > max_length else text.replace('\n', '')
+
+        i = issues[0]
+
+        available_width = term_width - len("| {:>2} | {:<11} | {} | {:<6} | {:<6} | ".format(
+            i.i_id, i.type, i.date, i.status, i.priority)) - 2
+
+        # if the user is using a tiny terminal, screw them.
+        if available_width < 1:
+            available_width = 80
+
+        print('*' * available_width + term_width)
+        # get terminal width
         for i in issues:
-            print(i)
+            first_half = "| {:>2} | {:<11} | {} | {:<6} | {:<6} | ".format(
+                i.i_id, i.type, i.date, i.status, i.priority)
+
+            summary = ":<{}".format(available_width)
+
+            final_line = first_half + '{' + summary + '}'
+            print(final_line.format(prettify(i.summary, available_width)), '|')
 
     def display_detail(self, issue_id):
         pass
@@ -161,7 +183,7 @@ class RabbitConsole:
 
 if len(sys.argv) == 1:
     usage()
-    exit(1)
+    sys.exit(1)
 
 from rabbit import *
 
