@@ -84,8 +84,15 @@ class RabbitConsole:
                 self.display('')
 
         elif command == 'detail':
-            self.display_detail(sys.argv[2])
-            pass
+            try:
+                self.display_detail(int(sys.argv[2]))
+            except ValueError:
+                print('Issue ID must be a number!')
+                sys.exit(1)
+            except IndexError:
+                print('You must provide an Issue ID')
+                sys.exit(1)
+
         elif command == 'comment':
             try:
                 self.rabbit.comment(int(sys.argv[2]), sys.argv[3])
@@ -171,6 +178,7 @@ class RabbitConsole:
         summary = ":<{}".format(available_width)
 
         nice_bars = "".join(['*' for i in range(term_width)])
+
         print(nice_bars)
         print("| {:>2} | {:<11} | {:<10} | {:<6} | {} | ".format(
             'id', 'type', 'date', 'status', 'priority') + str('{' + summary + '} |').format('summary'))
@@ -183,10 +191,16 @@ class RabbitConsole:
 
             final_line = first_half + '{' + summary + '}'
             print(final_line.format(prettify(i.summary, available_width)), '|')
+
         print(nice_bars)
 
     def display_detail(self, issue_id):
-        print(self.rabbit.issue(issue_id))
+        issue = self.rabbit.issue(issue_id)
+
+        print(issue)
+
+        for c in issue.comments:
+            print(c[1])
 
 if len(sys.argv) == 1:
     usage()
