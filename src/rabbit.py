@@ -89,6 +89,9 @@ class Rabbit:
 
         self.conn = sqlite3.connect(_filename)
 
+    def __del__(self):
+        self.conn.close()
+
     @staticmethod
     def init():
         """Create the database file and create the tables."""
@@ -160,6 +163,7 @@ class Rabbit:
         """
 
         self.conn.execute(issue.generate_update())
+        self.conn.commit()
 
     def delete(self, issue_id):
         """Delete an issue and all associated comments.
@@ -171,6 +175,7 @@ class Rabbit:
 
         self.conn.execute('delete from Comment where issueID = {}'.format(issue_id))
         self.conn.execute('delete from Issue where id = {}'.format(issue_id))
+        self.conn.commit()
 
     def comment(self, issue_id, comment):
         """Add a comment to an issue
@@ -180,7 +185,9 @@ class Rabbit:
         comment -- string containing the comment.
 
         """
+
         self.conn.execute("Insert into Comment(issueID, description) values({}, '{}')".format(issue_id, comment))
+        self.conn.commit()
 
     def issues(self, status_filter='all'):
         """Return a list of all Issues in the repository.
