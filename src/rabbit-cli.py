@@ -9,6 +9,46 @@ def usage():
         if command not in ('add', 'list', 'detail', 'comment', 'rm', 'update', 'close', 'open'):
             raise IllegalCommandError(command)
 
+        if command == 'add':
+            print("Usage: rabbit add [OPTION]" +
+                  "\nOptions:" +
+                  "\n  -b, --summary=SUMMARY          brief description of the issue"+
+                  "\n  -d, --description=DESCRIPTION  extended description of the issue" +
+                  "\n  -t, --type=TYPE                type of issue, e.g. enhancement, bug" +
+                  "\n  -s, --status=STATUS            status of the problem, e.g. open, closed" +
+                  "\n  -p, --priority=PRIORITY        issue priority, e.g. high, medium, low")
+
+        elif command == 'list':
+            print("Usage: rabbit list [STATUS]" +
+                  "\nList issues, filtered by STATUS." +
+                  "\nExample: rabbit list open")
+
+        elif command == 'detail':
+            print("Usage: rabbit detail [ID]" +
+                  "\nDetailed description of an issue, showing comments and extended info.")
+
+        elif command == 'comment':
+            print("Usage: rabbit comment [ID] [COMMENT]")
+        elif command == 'rm':
+            print("Usage: rabbit rm [ID]")
+
+        elif command == 'update':
+            print("Usage: rabbit update [ID] [OPTION]" +
+                  "\nOptions:" +
+                  "\n  -b, --summary=SUMMARY          brief description of the issue"+
+                  "\n  -d, --description=DESCRIPTION  extended description of the issue" +
+                  "\n  -t, --type=TYPE                type of issue, e.g. enhancement, bug" +
+                  "\n  -s, --status=STATUS            status of the problem, e.g. open, closed" +
+                  "\n  -p, --priority=PRIORITY        issue priority, e.g. high, medium, low")
+
+        elif command == 'close':
+            print("Usage: rabbit close [ID]..." +
+                  "\nClose a set of issues.")
+
+        else:
+            print("Usage: rabbit open [ID]..." +
+                  "\nRe-open a set of issues.")
+
     except IndexError:
         print("Usage: rabbit [COMMAND] [OPTION]..." +
           "\nExample: rabbit add --summary 'Segfault on program start' --priority high" +
