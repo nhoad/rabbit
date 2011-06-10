@@ -4,7 +4,24 @@ import sys
 import getopt
 
 def usage():
-    print('usage')
+    try:
+        command = sys.argv[2]
+        if command not in ('add', 'list', 'detail', 'comment', 'rm', 'update', 'close', 'open'):
+            raise IllegalCommandError(command)
+
+    except IndexError:
+        print("Usage: rabbit [COMMAND] [OPTION]..." +
+          "\nExample: rabbit add --summary 'Segfault on program start' --priority high" +
+          "\nCommands:" +
+          "\n  add        Add an issue" +
+          "\n  list       List all issues" +
+          "\n  detail     Detailed info about an issue" +
+          "\n  comment    Add a comment to an issue" +
+          "\n  rm         Remove an issue" +
+          "\n  update     Modify an issue" +
+          "\n  close      Close an issue" +
+          "\n  open       Re-open an issue" +
+          "\n\nExtended help for any command is accessible via 'rabbit help [COMMAND]'")
 
 class RabbitConsole:
     def __init__(self):
@@ -60,7 +77,7 @@ class RabbitConsole:
                 sys.exit(1)
 
         elif command == 'help':
-            pass
+            usage()
         else:
             raise IllegalCommandError(command)
 

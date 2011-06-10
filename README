@@ -2,48 +2,52 @@ rabbit
 
 Dependencies:
 -------------
-Python 2.6, at least
-python-pysqlite, any recent version. (I used 2.6.0-1)
+Python 3.0
+pysqlite, any recent version (I use 2.6.0)
 
 General:
 --------
-Ahh, the apple of my eye. Rabbit is an issue-tracker created for
-lone-wolf developer projects (as most of mine are).
+Rabbit is an issue-tracker created for for single developer projects. Students, this means you!
 
-I noticed that all of my small projects had no simple, standard way to keep
-track of bugs, features, ideas and notes in general about them and so quite
-often, no documentation of these sorts was ever done and the projects would
-become awful messes.
+I noticed that all of my small projects had no simple, standard way to keep track of bugs, features, ideas and notes in general about them and so quite often, no documentation of these sorts was ever done and the projects would become awful messes, or I'd use some horrid hackup of textfiles which resulted in the same mess.
 
-And so, I set out on a quest to find some simple, single user issue tracker
-software. But alas, I found none. Every single solution was undoubtedly a
-web-based behemoth which I was not going to do for a 200 line python script.
-
-With that, I decided I could write my own easily enough. And here, we have rabbit.
+I couldn't find any out there, so I wrote this.
 
 Installation:
 -------------
 
-Copy to a bin folder of your choice. Personally, I make a symbolic link from ~/bin/
-chmod +x it like normal. And there you go!
+Copy to a bin folder of your choice. Personally, I make a symbolic link from ~/bin/ chmod +x it like normal. And there you go!
+
+Windows Users: I'm aware that there are a few things about this that make it hard to run on Windows. I'm in the process of developing a GUI so it can be used on Windows too.
 
 Configuration:
 --------------
 
-There is very little to configure about this, in fact I don't think there is
-any. Simply use it!
-
+No configuration needed. Just use it!
 
 Usage:
 ------
-Usage of this glorious software is a bit difficult at first, but it gets
-easier the more you use it (hint hint!).
+Usage of this glorious software is a bit difficult at first, but it gets easier the more you use it (so use it lots!)
 
-To add an issue:
-   rabbit add -b "Example brief description" -d "example long description" -t enhancement
+Typical steps include:
 
-To remove an issue:
+Initalising a repository:
+   rabbit init
+
+Adding an issue:
+   rabbit add -b "Example brief description" -d "example long description" -t "Issue type" -s "status"
+
+Removing an issue:
    rabbit rm 1
+
+Updating an issue:
+   rabbit update [ID] -b "Example brief description" -d "example long description" -t "Issue type" -s "status"
+
+Closing an issue:
+   rabbit close [ID]...
+
+Opening an issue:
+   rabbit open [ID]...
 
 Displaying issues:
    rabbit list
@@ -52,7 +56,7 @@ Displaying issues with a status of 'open':
    rabbit list open
 
 Displaying a specific issue in detailed form:
-   rabbit detail 1
+   rabbit detail [issue id]
 
 And so on. To get a full list of the available options to you, run this:
    rabbit help
@@ -60,6 +64,4 @@ And so on. To get a full list of the available options to you, run this:
 Suggestions:
 ------------
 
-As I develop this software by myself, I also maintain the bugs and enhancements
-myself, with rabbit no less! So if you have any suggestions, or find a bug,
-please contact me via my details in the AUTHORS file.
+As I develop this software by myself, I also maintain the bugs and enhancements myself, with rabbit! So if you have any suggestions, or find a bug, please contact me via my details in the AUTHORS file.
