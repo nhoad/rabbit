@@ -14,14 +14,24 @@ Ui_MainWindow, Qt_MainWindow = uic.loadUiType('mainwindow.ui');
 Ui_AddWindow, Qt_AddWindow = uic.loadUiType('add.ui');
 
 class AddDialog(Qt_AddWindow, Ui_AddWindow):
-    def __init__(self, rabbit):
+    def __init__(self, rabbit, add_dialog=True, modify_issue=None):
         super(Qt_AddWindow, self).__init__()
         self.setupUi(self)
         self.setModal(True)
 
         self.rabbit = rabbit
 
+        self.add_dialog = add_dialog
+
         i = Issue()
+
+        if not self.add_dialog:
+            self.issue = modify_issue
+            self.setWindowTitle('Modify Issue')
+            i = modify_issue
+
+            self.summary.setText(i.summary)
+            self.description.setPlainText(i.description)
 
         self.type.setText(i.type)
         self.priority.setText(i.priority)
@@ -38,12 +48,18 @@ class AddDialog(Qt_AddWindow, Ui_AddWindow):
 
         i = Issue()
 
+        if not self.add_dialog:
+            i = self.issue
+
         i.summary = summary
         i.type = type
         i.priority = priority
         i.description = description
 
-        rabbit.add(i)
+        if self.add_dialog:
+            rabbit.add(i)
+        else:
+            rabbit.update(i)
 
 class RabbitUI(Qt_MainWindow, Ui_MainWindow):
     def __init__(self):
@@ -59,6 +75,8 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
         self.connect(self.actionComment, QtCore.SIGNAL('triggered()'), self.comment)
 
         self.issueTable.customContextMenuRequested.connect(self.right_click)
+
+        self.filter_text = 'all'
 
     def display_add(self):
         a = AddDialog(self.rabbit)
@@ -77,9 +95,9 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
 
         self.descriptionLabel.setText(repr(r))
 
-    def load_rabbit(self, filter_text=''):
+    def load_rabbit(self):
         self.rabbit = Rabbit()
-        issues = self.rabbit.issues(filter_text)
+        issues = self.rabbit.issues(self.filter_text)
         self.issueTable.setRowCount(len(issues))
 
         set_item = self.issueTable.setItem
@@ -140,9 +158,19 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
                 self.rabbit.delete(i_id)
 
         elif action.text() == 'Modify':
-            pass
+            self.modify()
         elif action.text() == 'Filter':
             self.filter()
+
+    def modify(self):
+        items = self.issueTable.selectedItems()
+        i_id = int(items[0].text())
+
+        a = AddDialog(self.rabbit, False, self.rabbit.issue(i_id))
+        a.exec()
+
+        if a.result() == QtGui.QDialog.Accepted:
+            w.load_rabbit()
 
     def comment(self):
         dialog = QtGui.QInputDialog()
@@ -161,8 +189,8 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
         dialog.exec()
 
         if dialog.result() == QtGui.QDialog.Accepted:
-            t = dialog.textValue()
-            w.load_rabbit(t)
+            self.filter_text = dialog.textValue()
+            w.load_rabbit()
 
 
 w = RabbitUI()

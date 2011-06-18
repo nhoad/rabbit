@@ -61,13 +61,13 @@ class Issue:
 
         This does not generate SQL for comments, or persist the object."""
 
-        if i_id is None:
+        if self.i_id is None:
             raise NonexistentIssueError()
 
         return """update Issue set type = '{0}', date='{1}', status='{2}',
                   priority='{3}', summary='{4}', description='{5}'
-                  where id = {6};)""".format(self.type, self.status,
-                  self.priority, self.summary, self.date,
+                  where id = {6}""".format(self.type, self.date,
+                  self.status, self.priority, self.summary,
                   self.description, self.i_id).replace('\n', '')
 
     def generate_insert(self):
