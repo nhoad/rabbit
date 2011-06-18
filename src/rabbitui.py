@@ -55,6 +55,9 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
         self.issueTable.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.connect(self.addButton, QtCore.SIGNAL('clicked()'), self.display_add)
         self.connect(self.issueTable, QtCore.SIGNAL('itemSelectionChanged()'), self.load_detailed)
+        self.connect(self.actionFilter, QtCore.SIGNAL('triggered()'), self.filter)
+        self.connect(self.actionComment, QtCore.SIGNAL('triggered()'), self.comment)
+
         self.issueTable.customContextMenuRequested.connect(self.right_click)
 
     def display_add(self):
@@ -125,15 +128,7 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
             self.rabbit.close([i_id])
 
         elif action.text() == 'Comment':
-            dialog = QtGui.QInputDialog()
-            dialog.setLabelText('Enter your comment:')
-            dialog.exec()
-
-            if dialog.result() == QtGui.QDialog.Accepted and dialog.textValue():
-                t = dialog.textValue()
-                items = table.selectedItems()
-                i_id = int(items[0].text())
-                self.rabbit.comment(i_id, t)
+            self.comment()
 
         elif action.text() == 'Delete':
             result = QMessageBox.warning(self, 'Remove this Issue?', 'Are you sure you want delete this issue?', QMessageBox.Yes, QMessageBox.No)
@@ -147,13 +142,27 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
         elif action.text() == 'Modify':
             pass
         elif action.text() == 'Filter':
-            dialog = QtGui.QInputDialog()
-            dialog.setLabelText('Status to filter (blank for everything)')
-            dialog.exec()
+            self.filter()
 
-            if dialog.result() == QtGui.QDialog.Accepted:
-                t = dialog.textValue()
-                w.load_rabbit(t)
+    def comment(self):
+        dialog = QtGui.QInputDialog()
+        dialog.setLabelText('Enter your comment:')
+        dialog.exec()
+
+        if dialog.result() == QtGui.QDialog.Accepted and dialog.textValue():
+            t = dialog.textValue()
+            items = table.selectedItems()
+            i_id = int(items[0].text())
+            self.rabbit.comment(i_id, t)
+
+    def filter(self):
+        dialog = QtGui.QInputDialog()
+        dialog.setLabelText('Status to filter (blank for everything)')
+        dialog.exec()
+
+        if dialog.result() == QtGui.QDialog.Accepted:
+            t = dialog.textValue()
+            w.load_rabbit(t)
 
 
 w = RabbitUI()
