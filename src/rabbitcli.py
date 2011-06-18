@@ -160,7 +160,11 @@ class RabbitConsole:
     def display(self, status):
         issues = self.rabbit.issues(status)
 
-        term_width = int(os.popen('stty size', 'r').read().split()[1])
+        if sys.platform == 'win32':
+            term_width = 80
+        else:
+            term_width = int(os.popen('stty size', 'r').read().split()[1])
+
 
         prettify = lambda text, max_length: text[:max_length - 3].replace(
             '\n', '') + '...' if len(text) > max_length else text.replace('\n', '')

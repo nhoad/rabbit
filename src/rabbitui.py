@@ -130,7 +130,7 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
             dialog.setLabelText('Enter your comment:')
             dialog.exec()
 
-            if dialog.result() == QtGui.QDialog.Accepted:
+            if dialog.result() == QtGui.QDialog.Accepted and dialog.textValue():
                 t = dialog.textValue()
                 items = table.selectedItems()
                 i_id = int(items[0].text())
