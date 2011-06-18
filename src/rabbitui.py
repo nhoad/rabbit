@@ -73,6 +73,7 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
         self.connect(self.issueTable, QtCore.SIGNAL('itemSelectionChanged()'), self.load_detailed)
         self.connect(self.actionFilter, QtCore.SIGNAL('triggered()'), self.filter)
         self.connect(self.actionComment, QtCore.SIGNAL('triggered()'), self.comment)
+        self.connect(self.actionModify, QtCore.SIGNAL('triggered()'), self.modify)
 
         self.issueTable.customContextMenuRequested.connect(self.right_click)
 
@@ -164,6 +165,10 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
 
     def modify(self):
         items = self.issueTable.selectedItems()
+
+        if len(items) == 0:
+            return
+
         i_id = int(items[0].text())
 
         a = AddDialog(self.rabbit, False, self.rabbit.issue(i_id))
@@ -179,7 +184,10 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
 
         if dialog.result() == QtGui.QDialog.Accepted and dialog.textValue():
             t = dialog.textValue()
-            items = table.selectedItems()
+            items = self.issueTable.selectedItems()
+            if len(items) == 0:
+                return
+
             i_id = int(items[0].text())
             self.rabbit.comment(i_id, t)
 
