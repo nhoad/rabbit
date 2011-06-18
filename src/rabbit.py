@@ -212,7 +212,7 @@ class Rabbit:
 
         """
 
-        self.conn.execute("Insert into Comment(issueID, description) values({}, '{}')".format(issue_id, comment))
+        self.conn.execute("Insert into Comment(issueID, description) values({}, '{}')".format(issue_id, comment.replace("'", "''")))
         self.conn.commit()
 
     def issue(self, issue_id):
