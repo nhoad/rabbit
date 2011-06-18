@@ -91,6 +91,12 @@ class Issue:
         text = '<b>Issue ID:</b> {}<br><b>Summary:</b> {}<br><b>Type:</b> {}<br><b>Date:</b> {}<br><b>Status:</b> {}<br><b>Priority:</b> {}<br><b>Description:</b> {}'.format(
             self.i_id, self.summary, self.type, self.date, self.status, self.priority, self.description)
 
+        comments = self.comments
+
+        if len(comments) > 0:
+            text += "<br><br><b>Comments:</b><br>"
+            text += "<br><br>".join([c[1] for c in self.comments])
+
         return text
 
 
