@@ -232,6 +232,9 @@ class Rabbit:
         cursor.execute(query)
         r = cursor.fetchone()
 
+        if r is None:
+            raise NonexistentIssueError()
+
         i = Issue(r[0], r[1], r[2], r[3], r[4], r[5], r[6])
 
         query = "select id, description from Comment where issueID = {}".format(issue_id)

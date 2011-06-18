@@ -224,6 +224,8 @@ else:
         print('rabbit:', e)
     except MissingArgumentError as e:
         print('rabbit:', e)
+    except NonexistentIssueError as e:
+        print('rabbit:', e)
 
 # if it makes it here, then an error occured
 sys.exit(1)
