@@ -13,19 +13,6 @@ app = QtGui.QApplication(sys.argv)
 Ui_MainWindow, Qt_MainWindow = uic.loadUiType('mainwindow.ui');
 Ui_AddWindow, Qt_AddWindow = uic.loadUiType('add.ui');
 
-class Issue:
-    i_id = None
-    i_type = None
-    status = None
-    priority = None
-    summary = None
-    description = None
-    comments = []
-
-    def __init__(self):
-        pass
-
-
 class AddDialog(Qt_AddWindow, Ui_AddWindow):
     def __init__(self, rabbit):
         super(Qt_AddWindow, self).__init__()
@@ -33,6 +20,11 @@ class AddDialog(Qt_AddWindow, Ui_AddWindow):
         self.setModal(True)
 
         self.rabbit = rabbit
+
+        i = Issue()
+
+        self.type.setText(i.type)
+        self.priority.setText(i.priority)
 
         self.connect(self.buttonBox, QtCore.SIGNAL('accepted()'), self.add)
 
@@ -42,7 +34,7 @@ class AddDialog(Qt_AddWindow, Ui_AddWindow):
         summary = self.summary.text()
         type = self.type.text()
         priority = self.priority.text()
-        description = self.description.text()
+        description = self.description.toPlainText()
 
         i = Issue()
 
@@ -70,16 +62,21 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
         a.exec()
 
     def load_detailed(self):
-        id = self.issueTable.selectedItems()[0].text()
+        selected = self.issueTable.selectedItems()
+        if len(selected) == 0:
+            self.descriptionLabel.setText('')
+            return
+
+        id = selected[0].text()
         id = int(id)
 
         r = self.rabbit.issue(id)
 
         self.descriptionLabel.setText(repr(r))
 
-    def load_rabbit(self):
+    def load_rabbit(self, filter_text=''):
         self.rabbit = Rabbit()
-        issues = self.rabbit.issues()
+        issues = self.rabbit.issues(filter_text)
         self.issueTable.setRowCount(len(issues))
 
         set_item = self.issueTable.setItem
@@ -103,6 +100,8 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
         menu.addSeparator()
         menu.addAction('Delete')
         menu.addAction('Modify')
+        menu.addSeparator()
+        menu.addAction('Filter')
 
         table = self.issueTable
 
@@ -147,8 +146,14 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
 
         elif action.text() == 'Modify':
             pass
-        elif action.text == 'Filter':
-            pass
+        elif action.text() == 'Filter':
+            dialog = QtGui.QInputDialog()
+            dialog.setLabelText('Status to filter (blank for everything)')
+            dialog.exec()
+
+            if dialog.result() == QtGui.QDialog.Accepted:
+                t = dialog.textValue()
+                w.load_rabbit(t)
 
 
 w = RabbitUI()
