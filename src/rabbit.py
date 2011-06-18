@@ -86,6 +86,14 @@ class Issue:
 
         return text
 
+    def __repr__(self):
+        """Returns the same text as __str__, but html formatted."""
+        text = '<b>Issue ID:</b> {}<br><b>Summary:</b> {}<br><b>Type:</b> {}<br><b>Date:</b> {}<br><b>Status:</b> {}<br><b>Priority:</b> {}<br><b>Description:</b> {}'.format(
+            self.i_id, self.summary, self.type, self.date, self.status, self.priority, self.description)
+
+        return text
+
+
 """Rabbit class, for managing bugs in the rabbit repository"""
 class Rabbit:
     def __init__(self):

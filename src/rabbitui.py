@@ -62,11 +62,20 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
 
         self.issueTable.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.connect(self.addButton, QtCore.SIGNAL('clicked()'), self.display_add)
+        self.connect(self.issueTable, QtCore.SIGNAL('itemSelectionChanged()'), self.load_detailed)
         self.issueTable.customContextMenuRequested.connect(self.right_click)
 
     def display_add(self):
         a = AddDialog(self.rabbit)
         a.exec()
+
+    def load_detailed(self):
+        id = self.issueTable.selectedItems()[0].text()
+        id = int(id)
+
+        r = self.rabbit.issue(id)
+
+        self.descriptionLabel.setText(repr(r))
 
     def load_rabbit(self):
         self.rabbit = Rabbit()
@@ -121,7 +130,7 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
             dialog.setLabelText('Enter your comment:')
             dialog.exec()
 
-            if
+            if dialog.result() == QtGui.QDialog.Accepted:
                 t = dialog.textValue()
                 items = table.selectedItems()
                 i_id = int(items[0].text())
