@@ -8,7 +8,7 @@ class MissingRepositoryError(Exception):
         pass
 
     def __str__(self):
-        return 'Rabbit repository is missing or could not be found'
+        return 'Rabbit repository is missing or could not be found. Try running rabbit init'
 
 
 class MissingArgumentError(Exception):

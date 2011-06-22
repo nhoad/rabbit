@@ -10,8 +10,10 @@ from rabbit import *
 
 app = QtGui.QApplication(sys.argv)
 
-Ui_MainWindow, Qt_MainWindow = uic.loadUiType('mainwindow.ui');
-Ui_AddWindow, Qt_AddWindow = uic.loadUiType('add.ui');
+folder = os.path.split(sys.argv[0])[0] + '/'
+
+Ui_MainWindow, Qt_MainWindow = uic.loadUiType(folder + 'mainwindow.ui');
+Ui_AddWindow, Qt_AddWindow = uic.loadUiType(folder + 'add.ui');
 
 class AddDialog(Qt_AddWindow, Ui_AddWindow):
     def __init__(self, rabbit, add_dialog=True, modify_issue=None):
@@ -62,6 +64,8 @@ class AddDialog(Qt_AddWindow, Ui_AddWindow):
             rabbit.update(i)
 
 class RabbitUI(Qt_MainWindow, Ui_MainWindow):
+    rabbit = None
+
     def __init__(self):
         super(Qt_MainWindow, self).__init__()
 
@@ -83,6 +87,9 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
         a = AddDialog(self.rabbit)
         a.exec()
 
+        if a.result() == QtGui.QDialog.Accepted:
+            self.load_rabbit()
+
     def load_detailed(self):
         selected = self.issueTable.selectedItems()
         if len(selected) == 0:
@@ -97,11 +104,12 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
         self.descriptionLabel.setText(repr(r))
 
     def load_rabbit(self):
-        try:
-            self.rabbit = Rabbit()
-        except MissingRepositoryError:
-            Rabbit.init()
-            self.rabbit = Rabbit()
+        if not self.rabbit:
+            try:
+                self.rabbit = Rabbit()
+            except MissingRepositoryError:
+                Rabbit.init()
+                self.rabbit = Rabbit()
 
         issues = self.rabbit.issues(self.filter_text)
         self.issueTable.setRowCount(len(issues))
@@ -180,7 +188,7 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
         a.exec()
 
         if a.result() == QtGui.QDialog.Accepted:
-            w.load_rabbit()
+            self.load_rabbit()
 
     def comment(self):
         dialog = QtGui.QInputDialog()
@@ -203,7 +211,7 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
 
         if dialog.result() == QtGui.QDialog.Accepted:
             self.filter_text = dialog.textValue()
-            w.load_rabbit()
+            self.load_rabbit()
 
 
 w = RabbitUI()
