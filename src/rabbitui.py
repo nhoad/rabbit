@@ -97,7 +97,12 @@ class RabbitUI(Qt_MainWindow, Ui_MainWindow):
         self.descriptionLabel.setText(repr(r))
 
     def load_rabbit(self):
-        self.rabbit = Rabbit()
+        try:
+            self.rabbit = Rabbit()
+        except MissingRepositoryError:
+            Rabbit.init()
+            self.rabbit = Rabbit()
+
         issues = self.rabbit.issues(self.filter_text)
         self.issueTable.setRowCount(len(issues))
 

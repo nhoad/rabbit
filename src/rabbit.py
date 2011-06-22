@@ -102,6 +102,8 @@ class Issue:
 
 """Rabbit class, for managing bugs in the rabbit repository"""
 class Rabbit:
+    conn = None
+
     def __init__(self):
         """Create the Rabbit object.
 
@@ -116,7 +118,8 @@ class Rabbit:
         self.conn = sqlite3.connect(_filename)
 
     def __del__(self):
-        self.conn.close()
+        if self.conn:
+            self.conn.close()
 
     @staticmethod
     def init():
