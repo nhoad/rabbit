@@ -10,7 +10,7 @@ from rabbit import *
 
 app = QtGui.QApplication(sys.argv)
 
-folder = os.path.split(sys.argv[0])[0] + '/'
+folder = os.path.split(os.path.realpath(__file__))[0] + '/'
 
 Ui_MainWindow, Qt_MainWindow = uic.loadUiType(folder + 'mainwindow.ui');
 Ui_AddWindow, Qt_AddWindow = uic.loadUiType(folder + 'add.ui');
