@@ -160,6 +160,9 @@ class RabbitConsole:
     def display(self, status):
         issues = self.rabbit.issues(status)
 
+        if len(issues) == 0:
+            return
+
         if sys.platform == 'win32':
             term_width = 80
         else:
