@@ -467,7 +467,7 @@ class RabbitConsole:
         i = issues[0]
 
         available_width = term_width - len("| {:>2} | {:<11} | {} | {:<6} | {:<6} | ".format(
-            i.i_id, i.type, i.date, i.status, i.priority)) - 4
+            i.i_id, prettify(i.type, 11), i.date, i.status, i.priority)) - 4
 
         # if the user is using a tiny terminal, screw them.
         # for reference, that would be a terminal width of ~20 characters.
@@ -486,7 +486,7 @@ class RabbitConsole:
         # get terminal width
         for i in issues:
             first_half = "| {:>2} | {:<11} | {} | {:<6} | {:<8} | ".format(
-                i.i_id, i.type, i.date, i.status, i.priority)
+                i.i_id, prettify(i.type, 11), i.date, i.status, i.priority)
 
             final_line = first_half + '{' + summary + '}'
             print(final_line.format(prettify(i.summary, available_width)), '|')
