@@ -4,44 +4,46 @@ import os
 import sqlite3
 _filename = '.rabbit'
 
-class MissingRepositoryError(Exception):
-    def __init__(self):
-        pass
+class MissingSummaryError(Exception):
+    'You must provide a summary'
 
     def __str__(self):
-        return 'Rabbit repository is missing or could not be found. Try running rabbit init'
+        return self.__doc__
+
+
+class MissingRepositoryError(Exception):
+    'Rabbit repository is missing or could not be found. Try running rabbit init'
+    def __str__(self):
+        return self.__doc__
 
 
 class MissingArgumentError(Exception):
-    def __init__(self):
-        pass
-
+    'No arguments supplied'
     def __str__(self):
-        return 'No arguments supplied'
+        return self.__doc__
 
 
 class IllegalCommandError(Exception):
+    "'{0}' is not a Rabbit command. See 'rabbit help'."
+
     def __init__(self, command):
         self.command = command
 
     def __str__(self):
-        return "'{0}' is not a Rabbit command. See 'rabbit help'.".format(self.command)
+        return self.__doc__.format(self.command)
 
 
 class RepositoryExistsError(Exception):
-    def __init__(self):
-        pass
-
+    'There already exists a Rabbit repository in this directory'
     def __str__(self):
-        return 'There already exists a Rabbit repository in this directory'
+        return self.__doc__
 
 
 class NonexistentIssueError(Exception):
-    def __init__(self):
-        pass
+    'The specified Issue does not exist'
 
     def __str__(self):
-        return 'The specified Issue does not exist'
+        return self.__doc__
 
 
 class Issue:
@@ -155,6 +157,10 @@ class Rabbit:
         issue -- Issue object to be stored
 
         """
+
+        if not issue.summary:
+            raise MissingSummaryError()
+
         self.conn.execute(issue.generate_insert())
         self.conn.commit()
 
@@ -191,6 +197,9 @@ class Rabbit:
         issue -- Issue object to be updated in the database
 
         """
+
+        if not issue.summary:
+            raise MissingSummaryError()
 
         self.conn.execute(issue.generate_update())
         self.conn.commit()
@@ -509,7 +518,7 @@ if __name__ == '__main__':
             sys.exit(0)
         except MissingRepositoryError as e:
             print('FATAL:', e)
-        except (IllegalCommandError, MissingArgumentError, NonexistentIssueError) as e:
+        except (IllegalCommandError, MissingArgumentError, NonexistentIssueError, MissingSummaryError) as e:
             print('rabbit:', e)
 
     # if it makes it here, then an error occured
