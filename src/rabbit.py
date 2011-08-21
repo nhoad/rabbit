@@ -367,7 +367,7 @@ class RabbitConsole:
 
         elif command == 'update':
             issue = self._parse_args()
-            self.rabbit.add(update)
+            self.rabbit.update(issue)
 
         elif command == 'list':
             try:
@@ -430,7 +430,7 @@ class RabbitConsole:
         i = Issue()
 
         if sys.argv[1] == 'update':
-            i.i_id = int(sys.argv[2])
+            i = self.rabbit.issue(int(sys.argv[2]))
 
         if not opts:
             raise MissingArgumentError()
